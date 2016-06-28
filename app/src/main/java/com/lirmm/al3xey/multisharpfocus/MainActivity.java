@@ -90,6 +90,9 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         camera.startPreview();
+        try {
+            Thread.sleep(250);
+        }catch(InterruptedException e){}
         camera.takePicture(null, null, jpegCallback);
     }
 
