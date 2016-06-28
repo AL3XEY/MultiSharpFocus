@@ -1,0 +1,24 @@
+# Java
+*.jar
+*.class
+
+# Android Studio
+
+*.iml
+.gradle
+/local.properties
+/.idea
+/build
+/captures
+
+# Eclipse
+
+bin/
+.classpath
+.project
+.settings/
+doc/javadoc/*
+
+# Misc
+*~
+*.DS_Store
