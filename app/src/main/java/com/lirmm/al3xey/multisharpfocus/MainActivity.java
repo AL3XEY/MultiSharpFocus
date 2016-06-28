@@ -7,6 +7,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 
@@ -100,18 +103,27 @@ public class MainActivity extends AppCompatActivity {
             Bitmap foo = BitmapFactory.decodeByteArray(data, 0, data.length);
 
             String root = Environment.getExternalStorageDirectory().toString();
-            File myDir = new File(root + "/saved_images");
+            File myDir = new File(root + "/MultiSharpFocus");
             myDir.mkdirs();
-            Random generator = new Random();
+
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"); // TODO or singleton giving unique ID every app start
+            Calendar cal = Calendar.getInstance();
+            String fname = dateFormat.format(cal.getTime()) + ".jpg";
+            Toast.makeText(getApplicationContext(),
+                    fname, Toast.LENGTH_LONG).show();
+
+            /*Random generator = new Random();
             int n = 10000;
             n = generator.nextInt(n);
             String fname = "Image-" + n + ".jpg"; //TODO date
+            */
+
             File file = new File(myDir, fname);
             if (file.exists())
                 file.delete();
             try {
                 FileOutputStream out = new FileOutputStream(file);
-                foo.compress(Bitmap.CompressFormat.JPEG, 90, out);
+                foo.compress(Bitmap.CompressFormat.JPEG, 90, out); //TODO discuss compression
                 out.flush();
                 out.close();
                 t2 = System.currentTimeMillis();
@@ -124,14 +136,14 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             } finally {
                 camera.stopPreview();
+                //TODO delay?
                 camera.release();
                 camera = null;
                 Toast.makeText(getApplicationContext(), "Image snapshot Done",
                         Toast.LENGTH_LONG).show();
 
                 Toast.makeText(getApplicationContext(),
-                        "Duration : " + (t2 - t1), Toast.LENGTH_LONG).show();
-                System.out.println("Duration : " + (t2 - t1));
+                        "Duration : " + (t2 - t1) + "ms", Toast.LENGTH_LONG).show();
 
             }
             Log.d("error", "onPictureTaken - jpeg");
