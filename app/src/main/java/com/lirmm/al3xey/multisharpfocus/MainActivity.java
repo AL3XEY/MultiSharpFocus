@@ -1,19 +1,5 @@
 package com.lirmm.al3xey.multisharpfocus;
 
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Random;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,26 +8,27 @@ import android.hardware.Camera.PictureCallback;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static boolean DEBUG = true;
     private ImageButton button;
     private String mCurrentPhotoPath;
-
-    static final int REQUEST_TAKE_PHOTO = 1;
-    static final int TAKE_PHOTO_CODE = 0;
-
-    private long t1;
-    private long t2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +86,10 @@ public class MainActivity extends AppCompatActivity {
     /** picture call back */
     PictureCallback jpegCallback = new PictureCallback() {
         public void onPictureTaken(byte[] data, Camera camera) {
-            t1 = System.currentTimeMillis();
+                long startTime=0, endTime=0;
+            if(DEBUG) {
+                startTime = System.currentTimeMillis();
+            }
             Bitmap foo = BitmapFactory.decodeByteArray(data, 0, data.length);
 
             String root = Environment.getExternalStorageDirectory().toString();
@@ -109,14 +99,10 @@ public class MainActivity extends AppCompatActivity {
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"); // TODO or singleton giving unique ID every app start
             Calendar cal = Calendar.getInstance();
             String fname = dateFormat.format(cal.getTime()) + ".jpg";
-            Toast.makeText(getApplicationContext(),
-                    fname, Toast.LENGTH_LONG).show();
-
-            /*Random generator = new Random();
-            int n = 10000;
-            n = generator.nextInt(n);
-            String fname = "Image-" + n + ".jpg"; //TODO date
-            */
+            if(DEBUG) {
+                Toast.makeText(getApplicationContext(),
+                        fname, Toast.LENGTH_LONG).show();
+            }
 
             File file = new File(myDir, fname);
             if (file.exists())
@@ -126,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
                 foo.compress(Bitmap.CompressFormat.JPEG, 90, out); //TODO discuss compression
                 out.flush();
                 out.close();
-                t2 = System.currentTimeMillis();
                 sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
                         Uri.parse("file://"
                                 + Environment.getExternalStorageDirectory())));
@@ -139,11 +124,14 @@ public class MainActivity extends AppCompatActivity {
                 //TODO delay?
                 camera.release();
                 camera = null;
-                Toast.makeText(getApplicationContext(), "Image snapshot Done",
-                        Toast.LENGTH_LONG).show();
+                if(DEBUG) {
+                    endTime = System.currentTimeMillis();
+                    Toast.makeText(getApplicationContext(), "Image snapshot Done",
+                            Toast.LENGTH_LONG).show();
 
-                Toast.makeText(getApplicationContext(),
-                        "Duration : " + (t2 - t1) + "ms", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),
+                            "Duration : " + (endTime - startTime) + "ms", Toast.LENGTH_LONG).show();
+                }
 
             }
             Log.d("error", "onPictureTaken - jpeg");
