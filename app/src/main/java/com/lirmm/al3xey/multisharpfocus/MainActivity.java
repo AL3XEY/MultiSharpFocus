@@ -14,6 +14,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -28,12 +29,15 @@ public class MainActivity extends AppCompatActivity {
 
     private static boolean DEBUG = true;
     private ImageButton button;
-    private String mCurrentPhotoPath;
+    //private String mCurrentPhotoPath; //TODO
+    private TextView focalLenghValueTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        focalLenghValueTextView = (TextView) findViewById(R.id.focalLengthValueTextView);
 
         button = (ImageButton) findViewById(R.id.imageButton1);
 
@@ -41,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View arg0) {
-                System.out.println("FRIDAY FRIDAY GETTIN' DOWN ON FRIDAY");
                 takeSnapShots();
             }
 
@@ -73,10 +76,17 @@ public class MainActivity extends AppCompatActivity {
         // here below "this" is activity context.
         SurfaceView surface = new SurfaceView(this);
         Camera camera = Camera.open();
+
+        float focalLengh = camera.getParameters().getFocalLength();
+        focalLenghValueTextView.setText(String.valueOf(focalLengh));
+
+        //camera.getParameters().getFocusAreas(); //null
+
+        //camera.getParameters().getFocusDistances();
+
         try {
             camera.setPreviewDisplay(surface.getHolder());
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         camera.startPreview();

@@ -12,7 +12,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:text="Welcome to MultiSharpFocus"
         android:id="@+id/textView" />
 
     <ImageButton
@@ -23,4 +23,22 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:src="@android:drawable/ic_menu_camera" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Focal length : "
+        android:id="@+id/focalLengthLabelTextView"
+        android:layout_alignBottom="@+id/imageButton1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/focalLengthValueTextView"
+        android:layout_alignTop="@+id/focalLengthLabelTextView"
+        android:layout_toRightOf="@+id/focalLengthLabelTextView"
+        android:layout_alignBottom="@+id/focalLengthLabelTextView"
+        android:text="0" />
 </RelativeLayout>
