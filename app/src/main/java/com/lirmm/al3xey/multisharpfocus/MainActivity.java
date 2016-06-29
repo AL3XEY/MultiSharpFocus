@@ -152,21 +152,12 @@ public class MainActivity extends AppCompatActivity {
         // here below "this" is activity context.
 
         float focalLength = camera.getParameters().getFocalLength();
-        focalLengthValueTextView.setText(String.valueOf(focalLength));
+        focalLengthValueTextView.setText(String.valueOf(focalLength)); //3.5
 
         //camera.getParameters().getFocusAreas(); //null
 
         //camera.getParameters().getFocusDistances();
 
-        /*try {
-            camera.setPreviewDisplay(previewHolder);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-        //camera.startPreview();
-        /*try {
-            Thread.sleep(250);
-        }catch(InterruptedException e){}*/*
         camera.takePicture(null, null, pictureCallback);
     }
 
