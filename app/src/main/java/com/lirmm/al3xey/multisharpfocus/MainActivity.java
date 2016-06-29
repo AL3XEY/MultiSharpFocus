@@ -29,15 +29,14 @@ public class MainActivity extends AppCompatActivity {
 
     private static boolean DEBUG = true;
     private ImageButton button;
-    //private String mCurrentPhotoPath; //TODO
-    private TextView focalLenghValueTextView;
+    private TextView focalLengthValueTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        focalLenghValueTextView = (TextView) findViewById(R.id.focalLengthValueTextView);
+        focalLengthValueTextView = (TextView) findViewById(R.id.focalLengthValueTextView);
 
         button = (ImageButton) findViewById(R.id.imageButton1);
 
@@ -51,25 +50,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /*@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }*/
-
-    /*@Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }*/
-
     private void takeSnapShots() {
         Toast.makeText(getApplicationContext(), "Image snapshot   Started",
                 Toast.LENGTH_SHORT).show();
@@ -77,8 +57,8 @@ public class MainActivity extends AppCompatActivity {
         SurfaceView surface = new SurfaceView(this);
         Camera camera = Camera.open();
 
-        float focalLengh = camera.getParameters().getFocalLength();
-        focalLenghValueTextView.setText(String.valueOf(focalLengh));
+        float focalLength = camera.getParameters().getFocalLength();
+        focalLengthValueTextView.setText(String.valueOf(focalLength));
 
         //camera.getParameters().getFocusAreas(); //null
 
@@ -96,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
         camera.takePicture(null, null, jpegCallback);
     }
 
-    /** picture call back */
     PictureCallback jpegCallback = new PictureCallback() {
         public void onPictureTaken(byte[] data, Camera camera) {
                 long startTime=0, endTime=0;
