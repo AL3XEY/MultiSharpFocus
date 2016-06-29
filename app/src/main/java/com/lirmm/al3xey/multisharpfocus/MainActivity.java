@@ -1,16 +1,15 @@
 package com.lirmm.al3xey.multisharpfocus;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -23,15 +22,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Camera.AutoFocusCallback{
 
     private static boolean DEBUG = true;
-    private ImageButton button;
+    private ImageButton pictureButton;
+    private ImageButton focusButton;
     private TextView focalLengthValueTextView;
     private Camera camera;
     private SurfaceView preview;
@@ -128,8 +129,8 @@ public class MainActivity extends AppCompatActivity {
         previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
         focalLengthValueTextView = (TextView) findViewById(R.id.focalLengthValueTextView);
-        button = (ImageButton) findViewById(R.id.imageButton1);
-        button.setOnClickListener(new OnClickListener() {
+        pictureButton = (ImageButton) findViewById(R.id.takePictureButton);
+        pictureButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
                 if (safeToTakePicture) {
@@ -139,6 +140,33 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        focusButton = (ImageButton) findViewById(R.id.focusButton);
+        focusButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                focusTest();
+            }
+        });
+    }
+
+    public void focusTest(){
+        Camera.Parameters parameters = camera.getParameters();
+        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        List<Camera.Area> focusAreas = new ArrayList<Camera.Area>();
+        Rect focusRect = new Rect(10,10,50,70);
+        focusAreas.add(new Camera.Area(focusRect, 1000));
+        parameters.setFocusAreas(focusAreas);
+
+        /*if (meteringAreaSupported) {
+            parameters.setMeteringAreas(Lists.newArrayList(new Camera.Area(meteringRect, 1000)));
+        }*/
+
+        camera.setParameters(parameters);
+        camera.autoFocus(this);
+    }
+
+    public void onAutoFocus(boolean success, Camera camera){
+        //
     }
 
     private void takePicture(){
@@ -242,6 +270,7 @@ public class MainActivity extends AppCompatActivity {
         //preview.setCamera(null);
         if (camera != null) {
             camera.release();
+            //camera.stopPreview();
             camera = null;
         }
     }
