@@ -1,5 +1,6 @@
 package com.lirmm.al3xey.multisharpfocus;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -21,6 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -102,7 +105,8 @@ public class MainActivity extends AppCompatActivity {
         public void surfaceChanged(SurfaceHolder holder,int format, int width,int height) {
             Camera.Parameters params;
             params = camera.getParameters();
-            params.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+            //params.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+            params.setRotation(90);
             Camera.Size size = getBestPreviewSize(width, height, params);
             Camera.Size pictureSize=getSmallestPictureSize(params);
             if (size != null && pictureSize != null) {
@@ -110,6 +114,12 @@ public class MainActivity extends AppCompatActivity {
                 params.setPictureSize(pictureSize.width,
                         pictureSize.height);
                 camera.setParameters(params);
+                camera.setDisplayOrientation(90);
+                try {
+                    camera.setPreviewDisplay(previewHolder);
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
                 camera.startPreview();
                 safeToTakePicture = true;
             }
@@ -132,6 +142,36 @@ public class MainActivity extends AppCompatActivity {
         previewHolder.addCallback(surfaceCallback);
         previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
+        /*if (Integer.parseInt(Build.VERSION.SDK) >= 8)
+            setDisplayOrientation(camera, 90);
+        else {
+            Camera.Parameters p = camera.getParameters();
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                p.set("orientation", "portrait");
+                p.set("rotation", 90);
+            }
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                p.set("orientation", "landscape");
+                p.set("rotation", 90);
+            }
+            camera.setParameters(p);
+        }*/
+
+        //camera.setDisplayOrientation(90);
+
+        //setCameraDisplayOrientation(this, 0, camera);
+
+        Camera.Parameters parameters = camera.getParameters();
+        parameters.setRotation(90);
+        camera.setParameters(parameters);
+
+        camera.setDisplayOrientation(90);
+        try {
+            camera.setPreviewDisplay(previewHolder);
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+
         focalLengthValueTextView = (TextView) findViewById(R.id.focalLengthValueTextView);
         button = (ImageButton) findViewById(R.id.imageButton1);
         button.setOnClickListener(new OnClickListener() {
@@ -144,6 +184,44 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public static void setCameraDisplayOrientation(Activity activity,
+                                                   int cameraId, android.hardware.Camera camera) {
+        android.hardware.Camera.CameraInfo info =
+                new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(cameraId, info);
+        int rotation = activity.getWindowManager().getDefaultDisplay()
+                .getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        camera.setDisplayOrientation(result);
+    }
+
+    protected void setDisplayOrientation(Camera camera, int angle){
+        Method downPolymorphic;
+        try
+        {
+            downPolymorphic = camera.getClass().getMethod("setDisplayOrientation", int.class);
+            if (downPolymorphic != null)
+                downPolymorphic.invoke(camera, angle);
+        }
+        catch (Exception e1)
+        {
+        }
     }
 
     private void takePicture(){
