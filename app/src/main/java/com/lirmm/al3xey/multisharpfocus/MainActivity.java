@@ -40,10 +40,6 @@ public class MainActivity extends AppCompatActivity {
 
     private Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
         public void onPictureTaken(byte[] data, Camera camera) {
-            long startTime=0, endTime=0;
-            if(DEBUG) {
-                startTime = System.currentTimeMillis();
-            }
             Bitmap foo = BitmapFactory.decodeByteArray(data, 0, data.length);
 
             String root = Environment.getExternalStorageDirectory().toString();
@@ -75,15 +71,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             } finally {
                 camera.startPreview();
-                if(DEBUG) {
-                    endTime = System.currentTimeMillis();
-                    Toast.makeText(getApplicationContext(), "Image snapshot Done",
-                            Toast.LENGTH_LONG).show();
-
-                    Toast.makeText(getApplicationContext(),
-                            "Duration : " + (endTime - startTime) + "ms", Toast.LENGTH_LONG).show();
-                }
-
             }
             Log.d("error", "onPictureTaken - jpeg");
             safeToTakePicture = true;
@@ -98,14 +85,12 @@ public class MainActivity extends AppCompatActivity {
             }   catch (Throwable t) {
                 Log.e("surfaceCallback",
                         "Exception in setPreviewDisplay()", t);
-                //Toast.makeText(this, t.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
 
         public void surfaceChanged(SurfaceHolder holder,int format, int width,int height) {
             Camera.Parameters params;
             params = camera.getParameters();
-            //params.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
             params.setRotation(90);
             Camera.Size size = getBestPreviewSize(width, height, params);
             Camera.Size pictureSize=getSmallestPictureSize(params);
@@ -142,36 +127,6 @@ public class MainActivity extends AppCompatActivity {
         previewHolder.addCallback(surfaceCallback);
         previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-        /*if (Integer.parseInt(Build.VERSION.SDK) >= 8)
-            setDisplayOrientation(camera, 90);
-        else {
-            Camera.Parameters p = camera.getParameters();
-            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                p.set("orientation", "portrait");
-                p.set("rotation", 90);
-            }
-            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                p.set("orientation", "landscape");
-                p.set("rotation", 90);
-            }
-            camera.setParameters(p);
-        }*/
-
-        //camera.setDisplayOrientation(90);
-
-        //setCameraDisplayOrientation(this, 0, camera);
-
-        Camera.Parameters parameters = camera.getParameters();
-        parameters.setRotation(90);
-        camera.setParameters(parameters);
-
-        camera.setDisplayOrientation(90);
-        try {
-            camera.setPreviewDisplay(previewHolder);
-        }catch(IOException e){
-            e.printStackTrace();
-        }
-
         focalLengthValueTextView = (TextView) findViewById(R.id.focalLengthValueTextView);
         button = (ImageButton) findViewById(R.id.imageButton1);
         button.setOnClickListener(new OnClickListener() {
@@ -186,57 +141,28 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public static void setCameraDisplayOrientation(Activity activity,
-                                                   int cameraId, android.hardware.Camera camera) {
-        android.hardware.Camera.CameraInfo info =
-                new android.hardware.Camera.CameraInfo();
-        android.hardware.Camera.getCameraInfo(cameraId, info);
-        int rotation = activity.getWindowManager().getDefaultDisplay()
-                .getRotation();
-        int degrees = 0;
-        switch (rotation) {
-            case Surface.ROTATION_0: degrees = 0; break;
-            case Surface.ROTATION_90: degrees = 90; break;
-            case Surface.ROTATION_180: degrees = 180; break;
-            case Surface.ROTATION_270: degrees = 270; break;
-        }
-
-        int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;  // compensate the mirror
-        } else {  // back-facing
-            result = (info.orientation - degrees + 360) % 360;
-        }
-        camera.setDisplayOrientation(result);
-    }
-
-    protected void setDisplayOrientation(Camera camera, int angle){
-        Method downPolymorphic;
-        try
-        {
-            downPolymorphic = camera.getClass().getMethod("setDisplayOrientation", int.class);
-            if (downPolymorphic != null)
-                downPolymorphic.invoke(camera, angle);
-        }
-        catch (Exception e1)
-        {
-        }
-    }
-
     private void takePicture(){
-        Toast.makeText(getApplicationContext(), "Image snapshot   Started",
-                Toast.LENGTH_SHORT).show();
-        // here below "this" is activity context.
+        long startTime=0, endTime=0;
+        if(DEBUG) {
+            //We put the display, log, etc here to avoid time loss
+            Toast.makeText(getApplicationContext(), "Taking picture...",
+                    Toast.LENGTH_SHORT).show();
+            float focalLength = camera.getParameters().getFocalLength();
+            focalLengthValueTextView.setText(String.valueOf(focalLength)); //3.5
 
-        float focalLength = camera.getParameters().getFocalLength();
-        focalLengthValueTextView.setText(String.valueOf(focalLength)); //3.5
+            //camera.getParameters().getFocusAreas(); //null
 
-        //camera.getParameters().getFocusAreas(); //null
+            //camera.getParameters().getFocusDistances();
 
-        //camera.getParameters().getFocusDistances();
+            startTime = System.currentTimeMillis();
+        }
 
         camera.takePicture(null, null, pictureCallback);
+        if(DEBUG) {
+            endTime = System.currentTimeMillis();
+            Toast.makeText(getApplicationContext(), "Picture taken! It took " + (endTime - startTime) + "ms",
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     private Camera.Size getBestPreviewSize(int width, int height,
@@ -282,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
         return(result);
     }
 
-private boolean safeCameraOpen(int id) {
+    private boolean safeCameraOpen(int id) {
         boolean opened = false;
 
         try {
