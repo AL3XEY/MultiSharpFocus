@@ -31,120 +31,61 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton button;
     private TextView focalLengthValueTextView;
     private Camera camera;
-    private Camera.PictureCallback pictureCallback;
-    //private Camera.ShutterCallback shutterCallback;
     private SurfaceView preview;
     private SurfaceHolder previewHolder;
-    //private SurfaceHolder.Callback surfaceCallback;
+    private boolean safeToTakePicture = false;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    private Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
+        public void onPictureTaken(byte[] data, Camera camera) {
+            long startTime=0, endTime=0;
+            if(DEBUG) {
+                startTime = System.currentTimeMillis();
+            }
+            Bitmap foo = BitmapFactory.decodeByteArray(data, 0, data.length);
 
-        safeCameraOpen();
+            String root = Environment.getExternalStorageDirectory().toString();
+            File myDir = new File(root + "/MultiSharpFocus");
+            myDir.mkdirs();
 
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"); // TODO or singleton giving unique ID every app start
+            Calendar cal = Calendar.getInstance();
+            String fname = dateFormat.format(cal.getTime()) + ".jpg";
+            if(DEBUG) {
+                Toast.makeText(getApplicationContext(),
+                        fname, Toast.LENGTH_LONG).show();
+            }
 
-
-        preview = (SurfaceView)findViewById(R.id.surfaceView);
-        previewHolder=preview.getHolder();
-        previewHolder.addCallback(surfaceCallback);
-        previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
-        pictureCallback = new Camera.PictureCallback() {
-            public void onPictureTaken(byte[] data, Camera camera) {
-                long startTime=0, endTime=0;
+            File file = new File(myDir, fname);
+            if (file.exists())
+                file.delete();
+            try {
+                FileOutputStream out = new FileOutputStream(file);
+                foo.compress(Bitmap.CompressFormat.JPEG, 90, out); //TODO discuss compression
+                out.flush();
+                out.close();
+                sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
+                        Uri.parse("file://"
+                                + Environment.getExternalStorageDirectory())));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                camera.startPreview();
                 if(DEBUG) {
-                    startTime = System.currentTimeMillis();
-                }
-                Bitmap foo = BitmapFactory.decodeByteArray(data, 0, data.length);
+                    endTime = System.currentTimeMillis();
+                    Toast.makeText(getApplicationContext(), "Image snapshot Done",
+                            Toast.LENGTH_LONG).show();
 
-                String root = Environment.getExternalStorageDirectory().toString();
-                File myDir = new File(root + "/MultiSharpFocus");
-                myDir.mkdirs();
-
-                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"); // TODO or singleton giving unique ID every app start
-                Calendar cal = Calendar.getInstance();
-                String fname = dateFormat.format(cal.getTime()) + ".jpg";
-                if(DEBUG) {
                     Toast.makeText(getApplicationContext(),
-                            fname, Toast.LENGTH_LONG).show();
+                            "Duration : " + (endTime - startTime) + "ms", Toast.LENGTH_LONG).show();
                 }
 
-                File file = new File(myDir, fname);
-                if (file.exists())
-                    file.delete();
-                try {
-                    FileOutputStream out = new FileOutputStream(file);
-                    foo.compress(Bitmap.CompressFormat.JPEG, 90, out); //TODO discuss compression
-                    out.flush();
-                    out.close();
-                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
-                            Uri.parse("file://"
-                                    + Environment.getExternalStorageDirectory())));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    camera.stopPreview();
-                    //TODO delay?
-                    camera.release();
-                    camera = null;
-                    if(DEBUG) {
-                        endTime = System.currentTimeMillis();
-                        Toast.makeText(getApplicationContext(), "Image snapshot Done",
-                                Toast.LENGTH_LONG).show();
-
-                        Toast.makeText(getApplicationContext(),
-                                "Duration : " + (endTime - startTime) + "ms", Toast.LENGTH_LONG).show();
-                    }
-
-                }
-                Log.d("error", "onPictureTaken - jpeg");
             }
-        };
-
-        focalLengthValueTextView = (TextView) findViewById(R.id.focalLengthValueTextView);
-        button = (ImageButton) findViewById(R.id.imageButton1);
-        button.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                //Toast.makeText(getApplicationContext(), "Button clicked!",
-                //        Toast.LENGTH_SHORT).show();
-
-                //camera.takePicture(null, null, pictureCallback);
-
-                takePicture();
-            }
-        });
-    }
-
-    private void takePicture(){
-        Toast.makeText(getApplicationContext(), "Image snapshot   Started",
-                Toast.LENGTH_SHORT).show();
-        // here below "this" is activity context.
-        SurfaceView surface = new SurfaceView(this);
-        //Camera camera = Camera.open();
-
-        //float focalLength = camera.getParameters().getFocalLength();
-        //focalLengthValueTextView.setText(String.valueOf(focalLength));
-
-        //camera.getParameters().getFocusAreas(); //null
-
-        //camera.getParameters().getFocusDistances();
-
-        /*try {
-            camera.setPreviewDisplay(surface.getHolder());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-        camera.startPreview();
-        try {
-            Thread.sleep(250);
-        }catch(InterruptedException e){}
-        camera.takePicture(null, null, pictureCallback);
-    }
+            Log.d("error", "onPictureTaken - jpeg");
+            safeToTakePicture = true;
+        }
+    };
 
     private SurfaceHolder.Callback surfaceCallback=new SurfaceHolder.Callback(){
 
@@ -158,51 +99,83 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-    public void surfaceChanged(SurfaceHolder holder,int format, int width,int height) {
-        Camera.Parameters params;
-        params = camera.getParameters();
-        params.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
-        Camera.Size size = getBestPreviewSize(width, height, params);
-        Camera.Size pictureSize=getSmallestPictureSize(params);
-        if (size != null && pictureSize != null) {
-            params.setPreviewSize(size.width, size.height);
-            params.setPictureSize(pictureSize.width,
-                    pictureSize.height);
-            camera.setParameters(params);
-            camera.startPreview();
-            //inPreview=true;
+        public void surfaceChanged(SurfaceHolder holder,int format, int width,int height) {
+            Camera.Parameters params;
+            params = camera.getParameters();
+            params.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+            Camera.Size size = getBestPreviewSize(width, height, params);
+            Camera.Size pictureSize=getSmallestPictureSize(params);
+            if (size != null && pictureSize != null) {
+                params.setPreviewSize(size.width, size.height);
+                params.setPictureSize(pictureSize.width,
+                        pictureSize.height);
+                camera.setParameters(params);
+                camera.startPreview();
+                safeToTakePicture = true;
+            }
+        }
+
+        public void surfaceDestroyed(SurfaceHolder holder) {
 
         }
-    }
+    };
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        private Camera.Size getBestPreviewSize(int width, int height,
-                                               Camera.Parameters parameters) {
-            Camera.Size result=null;
+        safeCameraOpen();
 
-            for (Camera.Size size : parameters.getSupportedPreviewSizes()) {
-                if (size.width <= width && size.height <= height) {
-                    if (result == null) {
-                        result=size;
-                    }
-                    else {
-                        int resultArea=result.width * result.height;
-                        int newArea=size.width * size.height;
+        preview = (SurfaceView)findViewById(R.id.surfaceView);
+        previewHolder=preview.getHolder();
+        previewHolder.addCallback(surfaceCallback);
+        previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-                        if (newArea > resultArea) {
-                            result=size;
-                        }
-                    }
+        focalLengthValueTextView = (TextView) findViewById(R.id.focalLengthValueTextView);
+        button = (ImageButton) findViewById(R.id.imageButton1);
+        button.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                if (safeToTakePicture) {
+                    //TODO MediaPlayer for sound
+                    takePicture();
+                    safeToTakePicture = false;
                 }
             }
+        });
+    }
 
-            return(result);
-        }
+    private void takePicture(){
+        Toast.makeText(getApplicationContext(), "Image snapshot   Started",
+                Toast.LENGTH_SHORT).show();
+        // here below "this" is activity context.
 
-        private Camera.Size getSmallestPictureSize(Camera.Parameters parameters) {
-            Camera.Size result=null;
+        float focalLength = camera.getParameters().getFocalLength();
+        focalLengthValueTextView.setText(String.valueOf(focalLength));
 
-            for (Camera.Size size : parameters.getSupportedPictureSizes()) {
+        //camera.getParameters().getFocusAreas(); //null
+
+        //camera.getParameters().getFocusDistances();
+
+        /*try {
+            camera.setPreviewDisplay(previewHolder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+        //camera.startPreview();
+        /*try {
+            Thread.sleep(250);
+        }catch(InterruptedException e){}*/*
+        camera.takePicture(null, null, pictureCallback);
+    }
+
+    private Camera.Size getBestPreviewSize(int width, int height,
+                                           Camera.Parameters parameters) {
+        Camera.Size result=null;
+
+        for (Camera.Size size : parameters.getSupportedPreviewSizes()) {
+            if (size.width <= width && size.height <= height) {
                 if (result == null) {
                     result=size;
                 }
@@ -210,19 +183,35 @@ public class MainActivity extends AppCompatActivity {
                     int resultArea=result.width * result.height;
                     int newArea=size.width * size.height;
 
-                    if (newArea < resultArea) {
+                    if (newArea > resultArea) {
                         result=size;
                     }
                 }
             }
-
-            return(result);
         }
 
-    public void surfaceDestroyed(SurfaceHolder holder) {
-
+        return(result);
     }
-};
+
+    private Camera.Size getSmallestPictureSize(Camera.Parameters parameters) {
+        Camera.Size result=null;
+
+        for (Camera.Size size : parameters.getSupportedPictureSizes()) {
+            if (result == null) {
+                result=size;
+            }
+            else {
+                int resultArea=result.width * result.height;
+                int newArea=size.width * size.height;
+
+                if (newArea < resultArea) {
+                    result=size;
+                }
+            }
+        }
+
+        return(result);
+    }
 
 private boolean safeCameraOpen(int id) {
         boolean opened = false;
