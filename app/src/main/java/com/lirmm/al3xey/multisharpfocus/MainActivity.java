@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
     private static boolean DEBUG = true;
     private ImageButton pictureButton;
     private ImageButton focusButton;
-    private TextView focalLengthValueTextView;
+    private TextView infoValueTextView;
     private Camera camera;
     private SurfaceView preview;
     private SurfaceHolder previewHolder;
@@ -109,6 +109,32 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
                 camera.startPreview();
                 safeToTakePicture = true;
             }
+
+            //List<Camera.Area> areas = new ArrayList<Camera.Area>();
+            //areas = params.getFocusAreas(); //TEST NOK : NPE
+            //areas = params.getMeteringAreas(); //TEST NOK : NPE
+
+            //float focalLength = params.getFocalLength(); //TEST OK : 3.5
+            //float distances[] = new float[3];
+            //params.getFocusDistances(distances); //TEST OK : 0.95 / 1.9 / Infinity
+            //int fps[] = new int[2];
+            //params.getPreviewFpsRange(fps); //TEST OK : 5000 / 60000
+            //List<String> strings = new ArrayList<String>();
+            //strings = params.getSupportedFocusModes(); //TEST OK : auto, macro, infinity, continuous-video, manual
+            //focalLength = params.getZoom(); //TEST OK : 0
+            //focalLength = params.getMaxNumFocusAreas(); //TEST OK : 1
+            //focalLength = params.getMaxNumMeteringAreas(); //TEST OK : 9
+            //focalLength = params.getMaxZoom(); //TEST OK : 10
+
+            //infoValueTextView.setText(String.valueOf(focalLength));
+            //infoValueTextView.setText(strings.get(5));
+            //infoValueTextView.setText(areas.toString());
+            //String display = String.valueOf(distances[0]) + " " + String.valueOf(distances[1]) + " " + String.valueOf(distances[2]);
+            //infoValueTextView.setText(display);
+            //String display = String.valueOf(fps[0]) + " " + String.valueOf(fps[1]);
+            //infoValueTextView.setText(display);
+            String display = "h : " + height + " w : " + width;
+            infoValueTextView.setText(display);
         }
 
         public void surfaceDestroyed(SurfaceHolder holder) {
@@ -128,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
         previewHolder.addCallback(surfaceCallback);
         previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-        focalLengthValueTextView = (TextView) findViewById(R.id.focalLengthValueTextView);
+        infoValueTextView = (TextView) findViewById(R.id.InfoValueTextView);
         pictureButton = (ImageButton) findViewById(R.id.takePictureButton);
         pictureButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -151,14 +177,15 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
 
     public void focusTest(){
         Camera.Parameters parameters = camera.getParameters();
+        camera.cancelAutoFocus();
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
         List<Camera.Area> focusAreas = new ArrayList<Camera.Area>();
-        Rect focusRect = new Rect(10,10,50,70);
+        Rect focusRect = new Rect(-1000,-1000,0,0); //TODO between -1000 and 1000? See doc for getFocusAreas()
         focusAreas.add(new Camera.Area(focusRect, 1000));
         parameters.setFocusAreas(focusAreas);
 
         /*if (meteringAreaSupported) {
-            parameters.setMeteringAreas(Lists.newArrayList(new Camera.Area(meteringRect, 1000)));
+            //parameters.setMeteringAreas(Lists.newArrayList(new Camera.Area(meteringRect, 1000)));
         }*/
 
         camera.setParameters(parameters);
@@ -166,7 +193,10 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
     }
 
     public void onAutoFocus(boolean success, Camera camera){
-        //
+        Camera.Parameters parameters = camera.getParameters();
+        //parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_FIXED); //TODO applications should not call autoFocus() in this mode
+        //camera.cancelAutoFocus(); //TODO why doesn't this work?
+        //camera.setParameters(parameters);
     }
 
     private void takePicture(){
@@ -175,8 +205,8 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
             //We put the display, log, etc here to avoid time loss
             Toast.makeText(getApplicationContext(), "Taking picture...",
                     Toast.LENGTH_SHORT).show();
-            float focalLength = camera.getParameters().getFocalLength();
-            focalLengthValueTextView.setText(String.valueOf(focalLength)); //3.5
+            //float focalLength = camera.getParameters().getFocalLength();
+            //infoValueTextView.setText(String.valueOf(focalLength)); //3.5
 
             //camera.getParameters().getFocusAreas(); //null
 
