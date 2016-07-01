@@ -38,24 +38,22 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
     private SurfaceView preview;
     private SurfaceHolder previewHolder;
     private boolean safeToTakePicture = false;
+    private static String OUTPUT_DIRECTORY_NAME = "MultiSharpFocus";
+    private File outputDirectory;
+    private DateFormat dateFormat;
 
-    private Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
+    private Camera.PictureCallback jpegPictureCallback = new Camera.PictureCallback() {
         public void onPictureTaken(byte[] data, Camera camera) {
             Bitmap foo = BitmapFactory.decodeByteArray(data, 0, data.length);
 
-            String root = Environment.getExternalStorageDirectory().toString();
-            File myDir = new File(root + "/MultiSharpFocus");
-            myDir.mkdirs();
-
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"); // TODO or singleton giving unique ID every app start
             Calendar cal = Calendar.getInstance();
-            String fname = dateFormat.format(cal.getTime()) + ".jpg";
+            String fileName = dateFormat.format(cal.getTime()) + ".jpg";
             if(DEBUG) {
                 Toast.makeText(getApplicationContext(),
-                        fname, Toast.LENGTH_LONG).show();
+                        fileName, Toast.LENGTH_LONG).show();
             }
 
-            File file = new File(myDir, fname);
+            File file = new File(outputDirectory, fileName);
             if (file.exists())
                 file.delete();
             try {
@@ -66,8 +64,6 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
                 sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
                         Uri.parse("file://"
                                 + Environment.getExternalStorageDirectory())));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -147,32 +143,42 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        safeCameraOpen();
+        String root = Environment.getExternalStorageDirectory().toString();
+        outputDirectory = new File(root + "/" + OUTPUT_DIRECTORY_NAME);
+        outputDirectory.mkdirs();
+        //if(outputDirectory.mkdirs()) {
 
-        preview = (SurfaceView)findViewById(R.id.surfaceView);
-        previewHolder=preview.getHolder();
-        previewHolder.addCallback(surfaceCallback);
-        previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+            safeCameraOpen();
 
-        infoValueTextView = (TextView) findViewById(R.id.InfoValueTextView);
-        pictureButton = (ImageButton) findViewById(R.id.takePictureButton);
-        pictureButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                if (safeToTakePicture) {
-                    //TODO MediaPlayer for sound
-                    takePicture();
-                    safeToTakePicture = false;
+            dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+
+            preview = (SurfaceView) findViewById(R.id.surfaceView);
+            previewHolder = preview.getHolder();
+            previewHolder.addCallback(surfaceCallback);
+            previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+            infoValueTextView = (TextView) findViewById(R.id.InfoValueTextView);
+            pictureButton = (ImageButton) findViewById(R.id.takePictureButton);
+            pictureButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View arg0) {
+                    if (safeToTakePicture) {
+                        //TODO MediaPlayer for sound
+                        takePicture();
+                        safeToTakePicture = false;
+                    }
                 }
-            }
-        });
-        focusButton = (ImageButton) findViewById(R.id.focusButton);
-        focusButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                focusTest();
-            }
-        });
+            });
+            focusButton = (ImageButton) findViewById(R.id.focusButton);
+            focusButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View arg0) {
+                    focusTest();
+                }
+            });
+        //}else{
+            //TODO
+        //}
     }
 
     public void focusTest(){
@@ -189,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
         }*/
 
         camera.setParameters(parameters);
+        camera.startPreview();
         camera.autoFocus(this);
     }
 
@@ -215,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
             startTime = System.currentTimeMillis();
         }
 
-        camera.takePicture(null, null, pictureCallback);
+        camera.takePicture(null, null, jpegPictureCallback);
         if(DEBUG) {
             endTime = System.currentTimeMillis();
             Toast.makeText(getApplicationContext(), "Picture taken! It took " + (endTime - startTime) + "ms",
