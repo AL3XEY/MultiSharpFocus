@@ -3,7 +3,10 @@ package com.lirmm.al3xey.multisharpfocus;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.ImageFormat;
 import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,7 +22,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -41,29 +43,114 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
     private static String OUTPUT_DIRECTORY_NAME = "MultiSharpFocus";
     private File outputDirectory;
     private DateFormat dateFormat;
+    private byte[] img = new byte[286836];
 
     private Camera.PictureCallback jpegPictureCallback = new Camera.PictureCallback() {
         public void onPictureTaken(byte[] data, Camera camera) {
+            /*img = data;
+            for(int i=0;i<img.length;i++){
+                Log.d("info", String.valueOf(img[i]));
+            }*/
+
             Bitmap foo = BitmapFactory.decodeByteArray(data, 0, data.length);
+            //foo.getPixel(10,10);
+            //Log.d("info", String.valueOf(foo.getPixel(10,10)));
+            /*if (foo.isMutable()){
+                for(int y=0;y<100;y++){
+                    for(int x=0;x<100;x++) {
+                        foo.setPixel(x, y, Color.WHITE);
+                    }
+                }
+            }*/
+
+            /*byte[] img = new byte[10000];
+
+            for(int i=0;i<10000;i++){
+                img[i]=data[i];
+            }
+            foo = BitmapFactory.decodeByteArray(img, 0, img.length);*/
+
+            //YuvImage yuvImage = new YuvImage(data, ImageFormat.NV21, 492, 583, null);
 
             Calendar cal = Calendar.getInstance();
             String fileName = dateFormat.format(cal.getTime()) + ".jpg";
             if(DEBUG) {
                 Toast.makeText(getApplicationContext(),
-                        fileName, Toast.LENGTH_LONG).show();
+                        String.valueOf(data.length) + "bytes", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(),
+                        fileName, Toast.LENGTH_SHORT).show();
             }
 
             File file = new File(outputDirectory, fileName);
             if (file.exists())
                 file.delete();
             try {
+                /*FileOutputStream out = new FileOutputStream(file);
+                foo.compress(Bitmap.CompressFormat.JPEG, 100, out); //TODO discuss compression
+                out.flush();
+                out.close();
+                sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
+                        Uri.parse("file://"
+                                + Environment.getExternalStorageDirectory())));*/
+                /**********/
+
                 FileOutputStream out = new FileOutputStream(file);
-                foo.compress(Bitmap.CompressFormat.JPEG, 90, out); //TODO discuss compression
+
+                int height = foo.getHeight();
+                int width = foo.getWidth();
+
+                //Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888); //TODO see which config is best
+                //Bitmap.copy(Bitmap.Config config, boolean isMutable)
+                Bitmap bmp = foo.copy(Bitmap.Config.ARGB_8888, true);
+
+                int colour = foo.getPixel(0, 0);
+                int red = Color.red(colour);
+                int blue = Color.blue(colour);
+                int green = Color.green(colour);
+                int alpha = Color.alpha(colour);
+
+                //bmp.setPixel(0, 0, colour);
+                if (bmp.isMutable()) {
+                    for (int y = 0; y < 100; y++) {
+                        for (int x = 0; x < 100; x++) {
+                            bmp.setPixel(x, y, Color.WHITE);
+                        }
+                    }
+                }
+
+                if(DEBUG) {
+                    Toast.makeText(getApplicationContext(),
+                            "h " + height, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),
+                            "w " + width, Toast.LENGTH_SHORT).show();
+
+                    Toast.makeText(getApplicationContext(),
+                            "r " + red, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),
+                            "g " + green, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),
+                            "b " + blue, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),
+                            "a " + alpha, Toast.LENGTH_SHORT).show();
+                }
+
+                /*int[] pix = new int[492 * 583];
+                foo.getPixels(pix, 0, 492, 0, 0, 492, 583);
+
+                for (int i = 0; i < pix.length; i++) {
+                    red = (pix[i]) >> 16 & 0xff;
+                    green = (pix[i]) >> 8 & 0xff;
+                    blue = (pix[i]) & 0xff;
+                }*/
+
+                bmp.compress(Bitmap.CompressFormat.JPEG, 100, out); //TODO discuss compression
                 out.flush();
                 out.close();
                 sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
                         Uri.parse("file://"
                                 + Environment.getExternalStorageDirectory())));
+
+                /**********/
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -117,20 +204,24 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
             //params.getPreviewFpsRange(fps); //TEST OK : 5000 / 60000
             //List<String> strings = new ArrayList<String>();
             //strings = params.getSupportedFocusModes(); //TEST OK : auto, macro, infinity, continuous-video, manual
+            //List<Integer> formats = new ArrayList<Integer>();
+            //formats = params.getSupportedPictureFormats();
             //focalLength = params.getZoom(); //TEST OK : 0
             //focalLength = params.getMaxNumFocusAreas(); //TEST OK : 1
             //focalLength = params.getMaxNumMeteringAreas(); //TEST OK : 9
             //focalLength = params.getMaxZoom(); //TEST OK : 10
 
             //infoValueTextView.setText(String.valueOf(focalLength));
-            //infoValueTextView.setText(strings.get(5));
+            //infoValueTextView.setText(strings.toString());
             //infoValueTextView.setText(areas.toString());
             //String display = String.valueOf(distances[0]) + " " + String.valueOf(distances[1]) + " " + String.valueOf(distances[2]);
             //infoValueTextView.setText(display);
             //String display = String.valueOf(fps[0]) + " " + String.valueOf(fps[1]);
-            //infoValueTextView.setText(display);
             String display = "h : " + height + " w : " + width;
             infoValueTextView.setText(display);
+            //infoValueTextView.setText(formats.toString());
+            //infoValueTextView.setText(String.valueOf(ImageFormat.JPEG));
+
         }
 
         public void surfaceDestroyed(SurfaceHolder holder) {
