@@ -47,31 +47,9 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
 
     private Camera.PictureCallback jpegPictureCallback = new Camera.PictureCallback() {
         public void onPictureTaken(byte[] data, Camera camera) {
-            /*img = data;
-            for(int i=0;i<img.length;i++){
-                Log.d("info", String.valueOf(img[i]));
-            }*/
 
             Bitmap foo = BitmapFactory.decodeByteArray(data, 0, data.length);
-            //foo.getPixel(10,10);
-            //Log.d("info", String.valueOf(foo.getPixel(10,10)));
-            /*if (foo.isMutable()){
-                for(int y=0;y<100;y++){
-                    for(int x=0;x<100;x++) {
-                        foo.setPixel(x, y, Color.WHITE);
-                    }
-                }
-            }*/
-
-            /*byte[] img = new byte[10000];
-
-            for(int i=0;i<10000;i++){
-                img[i]=data[i];
-            }
-            foo = BitmapFactory.decodeByteArray(img, 0, img.length);*/
-
-            //YuvImage yuvImage = new YuvImage(data, ImageFormat.NV21, 492, 583, null);
-
+            
             Calendar cal = Calendar.getInstance();
             String fileName = dateFormat.format(cal.getTime()) + ".jpg";
             if(DEBUG) {
