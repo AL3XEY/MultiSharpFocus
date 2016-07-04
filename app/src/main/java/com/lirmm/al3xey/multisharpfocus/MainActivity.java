@@ -3,7 +3,6 @@ package com.lirmm.al3xey.multisharpfocus;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.net.Uri;
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements Camera.AutoFocusCallback{
+public class MainActivity extends AppCompatActivity implements Camera.AutoFocusCallback {
 
     private static boolean DEBUG = false;
 
@@ -45,44 +44,54 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
 
     private Camera.PictureCallback jpegPictureCallback = new Camera.PictureCallback() {
         public void onPictureTaken(byte[] data, Camera camera) {
-            Bitmap foo;
+            Bitmap bmp;
             Calendar cal;
             String fileName;
             File file;
             FileOutputStream out;
 
             try {
-                foo = BitmapFactory.decodeByteArray(data, 0, data.length);
+                bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
                 cal = Calendar.getInstance();
                 fileName = dateFormat.format(cal.getTime()) + ".jpg";
-                if(DEBUG) {
+                if (DEBUG) {
                     Toast.makeText(getApplicationContext(),
                             String.valueOf(data.length) + "bytes", Toast.LENGTH_SHORT).show();
                     Toast.makeText(getApplicationContext(),
                             fileName, Toast.LENGTH_SHORT).show();
                     Toast.makeText(getApplicationContext(),
-                            "h " + foo.getHeight(), Toast.LENGTH_SHORT).show();
+                            "h " + bmp.getHeight(), Toast.LENGTH_SHORT).show();
                     Toast.makeText(getApplicationContext(),
-                            "w " + foo.getWidth(), Toast.LENGTH_SHORT).show();
+                            "w " + bmp.getWidth(), Toast.LENGTH_SHORT).show();
                 }
                 file = new File(outputDirectory, fileName);
                 if (file.exists())
                     file.delete();
 
                 out = new FileOutputStream(file);
-                foo.compress(Bitmap.CompressFormat.JPEG, 100, out); //TODO discuss compression
+                bmp.compress(Bitmap.CompressFormat.JPEG, 100, out); //TODO discuss compression
                 out.flush();
                 out.close();
                 sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
                         Uri.parse("file://"
                                 + Environment.getExternalStorageDirectory())));
 
-                Image image = new Image(foo);
+                Image image = new Image(bmp);
 
-                /**SOBEL TEST**/
+                /*** IMAGE PROCESSING TESTS ***/
 
                 Image sobel = image.sobel(100);
-                foo = sobel.getBitmap();
+                bmp = sobel.getBitmap();
+                Histogram histogram = sobel.getHistogram();
+
+                if (DEBUG) {
+                    Toast.makeText(getApplicationContext(),
+                            "hist[0] =  " + histogram.get(0), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),
+                            "hist[255] =  " + histogram.get(255), Toast.LENGTH_SHORT).show();
+                }
+
+                /******************************/
 
                 //writing the new image
                 fileName = dateFormat.format(cal.getTime()) + "-sobel.jpg";
@@ -91,14 +100,13 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
                     file.delete();
 
                 out = new FileOutputStream(file);
-                foo.compress(Bitmap.CompressFormat.JPEG, 100, out); //TODO discuss compression
+                bmp.compress(Bitmap.CompressFormat.JPEG, 100, out); //TODO discuss compression
                 out.flush();
                 out.close();
                 sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
                         Uri.parse("file://"
                                 + Environment.getExternalStorageDirectory())));
 
-                /**********/
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -109,18 +117,18 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
         }
     };
 
-    private SurfaceHolder.Callback surfaceCallback=new SurfaceHolder.Callback(){
+    private SurfaceHolder.Callback surfaceCallback = new SurfaceHolder.Callback() {
 
         public void surfaceCreated(SurfaceHolder holder) {
             try {
                 camera.setPreviewDisplay(previewHolder);
-            }   catch (Throwable t) {
+            } catch (Throwable t) {
                 Log.e("surfaceCallback",
                         "Exception in setPreviewDisplay()", t);
             }
         }
 
-        public void surfaceChanged(SurfaceHolder holder,int format, int width,int height) {
+        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             Camera.Parameters parameters;
             parameters = camera.getParameters();
             parameters.setRotation(90);
@@ -131,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
                 camera.setDisplayOrientation(90);
                 try {
                     camera.setPreviewDisplay(previewHolder);
-                }catch(IOException e){
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
                 camera.startPreview();
@@ -163,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
             //infoValueTextView.setText(display);
             //String display = String.valueOf(fps[0]) + " " + String.valueOf(fps[1]);
 
-            String display = "w : " + width + " h : " + height;
+            //String display = "w : " + width + " h : " + height;
             //infoValueTextView.setText(display);
 
             //infoValueTextView.setText(formats.toString());
@@ -186,51 +194,51 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
         outputDirectory.mkdir();
         //if(outputDirectory.mkdirs()) {
 
-            safeCameraOpen();
+        safeCameraOpen();
 
-            //set the size of the picture taken
-            Camera.Parameters parameters = camera.getParameters();
-            Camera.Size size = getHighestPictureSize(parameters);
-            parameters.setPictureSize(size.width, size.height);
-            camera.setParameters(parameters);
+        //set the size of the picture taken
+        Camera.Parameters parameters = camera.getParameters();
+        Camera.Size size = getHighestPictureSize(parameters);
+        parameters.setPictureSize(size.width, size.height);
+        camera.setParameters(parameters);
 
-            dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 
-            preview = (SurfaceView) findViewById(R.id.surfaceView);
-            previewHolder = preview.getHolder();
-            previewHolder.addCallback(surfaceCallback);
-            previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        preview = (SurfaceView) findViewById(R.id.surfaceView);
+        previewHolder = preview.getHolder();
+        previewHolder.addCallback(surfaceCallback);
+        previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-            infoValueTextView = (TextView) findViewById(R.id.InfoValueTextView);
-            pictureButton = (ImageButton) findViewById(R.id.takePictureButton);
-            pictureButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View arg0) {
-                    if (safeToTakePicture) {
-                        //TODO MediaPlayer for sound
-                        takePicture();
-                        safeToTakePicture = false;
-                    }
+        infoValueTextView = (TextView) findViewById(R.id.InfoValueTextView);
+        pictureButton = (ImageButton) findViewById(R.id.takePictureButton);
+        pictureButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                if (safeToTakePicture) {
+                    //TODO MediaPlayer for sound
+                    takePicture();
+                    safeToTakePicture = false;
                 }
-            });
-            focusButton = (ImageButton) findViewById(R.id.focusButton);
-            focusButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View arg0) {
-                    focusTest();
-                }
-            });
+            }
+        });
+        focusButton = (ImageButton) findViewById(R.id.focusButton);
+        focusButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                focusTest();
+            }
+        });
         //}else{
-            //TODO
+        //TODO
         //}
     }
 
-    public void focusTest(){
+    public void focusTest() {
         Camera.Parameters parameters = camera.getParameters();
         camera.cancelAutoFocus();
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
         List<Camera.Area> focusAreas = new ArrayList<Camera.Area>();
-        Rect focusRect = new Rect(-1000,-1000,0,0); //TODO between -1000 and 1000? See doc for getFocusAreas()
+        Rect focusRect = new Rect(-1000, -1000, 0, 0); //TODO between -1000 and 1000? See doc for getFocusAreas()
         focusAreas.add(new Camera.Area(focusRect, 1000));
         parameters.setFocusAreas(focusAreas);
 
@@ -243,16 +251,16 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
         camera.autoFocus(this);
     }
 
-    public void onAutoFocus(boolean success, Camera camera){
+    public void onAutoFocus(boolean success, Camera camera) {
         //Camera.Parameters parameters = camera.getParameters();
         //parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_FIXED); //TODO applications should not call autoFocus() in this mode
         //camera.cancelAutoFocus(); //TODO why doesn't this work?
         //camera.setParameters(parameters);
     }
 
-    private void takePicture(){
-        long startTime=0, endTime=0;
-        if(DEBUG) {
+    private void takePicture() {
+        long startTime = 0, endTime = 0;
+        if (DEBUG) {
             //We put the display, log, etc here to avoid time loss
             Toast.makeText(getApplicationContext(), "Taking picture...",
                     Toast.LENGTH_SHORT).show();
@@ -267,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
         }
 
         camera.takePicture(null, null, jpegPictureCallback);
-        if(DEBUG) {
+        if (DEBUG) {
             endTime = System.currentTimeMillis();
             Toast.makeText(getApplicationContext(), "Picture taken! It took " + (endTime - startTime) + "ms",
                     Toast.LENGTH_SHORT).show();
@@ -276,45 +284,43 @@ public class MainActivity extends AppCompatActivity implements Camera.AutoFocusC
 
     private Camera.Size getBestPreviewSize(int width, int height,
                                            Camera.Parameters parameters) {
-        Camera.Size result=null;
+        Camera.Size result = null;
 
         for (Camera.Size size : parameters.getSupportedPreviewSizes()) {
             if (size.width <= width && size.height <= height) {
                 if (result == null) {
-                    result=size;
-                }
-                else {
-                    int resultArea=result.width * result.height;
-                    int newArea=size.width * size.height;
+                    result = size;
+                } else {
+                    int resultArea = result.width * result.height;
+                    int newArea = size.width * size.height;
 
                     if (newArea > resultArea) {
-                        result=size;
+                        result = size;
                     }
                 }
             }
         }
 
-        return(result);
+        return (result);
     }
 
     private Camera.Size getHighestPictureSize(Camera.Parameters parameters) {
-        Camera.Size result=null;
+        Camera.Size result = null;
 
         for (Camera.Size size : parameters.getSupportedPictureSizes()) {
             if (result == null) {
-                result=size;
-            }
-            else {
-                int resultArea=result.width * result.height;
-                int newArea=size.width * size.height;
+                result = size;
+            } else {
+                int resultArea = result.width * result.height;
+                int newArea = size.width * size.height;
 
                 if (newArea > resultArea) {
-                    result=size;
+                    result = size;
                 }
             }
         }
 
-        return(result);
+        return (result);
     }
 
     private boolean safeCameraOpen(int id) {
