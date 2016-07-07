@@ -9,32 +9,34 @@ graphics_toolkit('gnuplot')
 %pause;
 
 %img = imread('img/01.jpg');
-%img = imread('img/02.jpg');
-%img = imread('img/kidsblur.ppm');
-%img = imread('img/IMG_7291.jpg');
-%img = imread('img/IMG_7293-e1292255522923.jpg');
-%img = imread('img/test1.jpg');
-%img = imread('img/test2.jpg'); % error: rgb2gray: the input must either be an RGB image or a colormap
-%img = imread('img/test3.jpg');
+%img = imread('img/02.jpg'); %good
+%img = imread('img/kidsblur.ppm'); %very good
+%img = imread('img/lena.ppm'); %good
+
+%img = imread('img/test1.jpg'); %good
+%img = imread('img/test2.jpg'); % error: rgb2gray: the input must either be an RGB image or a colormap %kind of bad
+%img = imread('img/test3.jpg'); %not bad
 %img = imread('img/test4.jpg'); %very good
 %img = imread('img/test5.jpg'); %very good
-img = imread('img/test6.jpg'); %very good
+%img = imread('img/test6.jpg'); %very good
+%img = imread('img/test7.jpg'); %surprisingly good => noisy original image
+%img = imread('img/test8.jpg'); %very good
 
-%img = imread('img/blur1.jpg');
-%img = imread('img/blur2.jpg');
-%img = imread('img/blur3.jpg');
-%img = imread('img/blur4.jpg');
+%img = imread('img/blur1.png'); %not so good
+%img = imread('img/blur2.jpg'); %very good
+%img = imread('img/blur3.jpg'); %really bad, logical
+%img = imread('img/blur4.jpg'); %bad, logical
 
-%img = imread('img/res1.jpg');
-%img = imread('img/res2.jpg');
-%img = imread('img/res3.jpg');
-%img = imread('img/res4.jpg');
-%img = imread('img/res5.jpg');
-%img = imread('img/res6.jpg');
-
+%img = imread('img/res1.jpg'); %very good
+%img = imread('img/res2.jpg'); %very good
+%img = imread('img/res3.jpg'); %very good
+%img = imread('img/res4.jpg'); %very good
+%img = imread('img/res5.jpg'); %slow but good
+%img = imread('img/res6.jpg'); %very slow, quite good
 
 % convert image to grayscale
 
+%TODO if image is already grayscaled
 imgGray = rgb2gray(img);
 %imgGray = img; %if image is already grayscaled
 [h,w]=size(img)
@@ -185,10 +187,8 @@ edges = edge(res);
 figure;
 imshow(edges);
 
-%se = strel('line',90,90);
 %se = offsetstrel('ball',5,5);
-mn = [3 3];
-se = strel('rectangle',mn);
+se = strel('square',3);
 
 dil = edges;
 for i=1:4
