@@ -6,37 +6,29 @@ pkg load image;
 
 %graphics_toolkit('gnuplot');
 
-method = 2;
-test = 3;
+method = 1;
+test = 2;
 
 if test==1
-    n=40;
-    point1=234;
-    point2=251;
-    seq{1} = imread('img/fomd/fomd042.ppm')(point1:point1+n-1,point2:point2+n-1,:);
-    seq{2} = imread('img/fomd/fomd043.ppm')(point1:point1+n-1,point2:point2+n-1,:);
+    seq{1} = imread('img/fomd/fomd042.ppm');
+    seq{2} = imread('img/fomd/fomd043.ppm');
     %seq{3} = imread('img/fomd/fomd042.ppm');
     %seq{4} = imread('img/fomd/fomd043.ppm');
     %seq{5} = imread('img/fomd/fomd044.ppm');
 elseif test==2
-    n=512;
-    point1=1;
-    point2=1;
-    seq{1} = imread('img/lenat2.ppm')(point1:point1+n-1,point2:point2+n-1,:);
-    seq{2} = imread('img/lenat3.ppm')(point1:point1+n-1,point2:point2+n-1,:);
+    seq{1} = imread('img/lenat2.ppm');
+    seq{2} = imread('img/lenat3.ppm');
 elseif test==3
-    n=212;
-    point1=1;
-    point2=1;
-    seq{1} = imread('img/01.ppm')(point1:point1+n-1,point2:point2+n-1,:);
-    seq{2} = imread('img/02.ppm')(point1:point1+n-1,point2:point2+n-1,:);
+    seq{1} = imread('img/01.ppm');
+    seq{2} = imread('img/02.ppm');
 elseif test==4
-    n=360;
-    point1=1;
-    point2=1;
-    seq{1} = imread('img/sd/set2/img0.ppm')(point1:point1+n-1,point2:point2+n-1,:);
-    seq{2} = imread('img/sd/set2/img3.ppm')(point1:point1+n-1,point2:point2+n-1,:);
+    seq{1} = imread('img/sd/set2/img0.ppm');
+    seq{2} = imread('img/sd/set2/img1.ppm');
+elseif test==5
+    seq{1} = imread('img/optical-flow/1.ppm');
+    seq{2} = imread('img/optical-flow/2.ppm');
 end
+
 
 [h,w,c] = size(seq{1})
 
@@ -128,18 +120,18 @@ imshow(seq{2});
 %it=ones(n);
 imgGray = rgb2gray(seq{1});
 
-ix(1:n-1,1:n) = diff(imgGray(:,:));
+ix(1:h-1,1:w) = diff(imgGray(:,:));
 figure;
 imshow(ix);
-ix=ones(n);
-ix(1:n-1,1:n) = diff(imgGray(:,:));
+ix=ones(h,w);
+ix(1:h-1,1:w) = diff(imgGray(:,:));
 
-iy(1:n-1,1:n) = diff(imgGray(:,:)');
+iy(1:w-1,1:h) = diff(imgGray(:,:)');
 iy = iy';
 figure;
 imshow(iy);
-iy=ones(n);
-iy(1:n-1,1:n) = diff(imgGray(:,:)');
+iy=ones(h,w);
+iy(1:w-1,1:h) = diff(imgGray(:,:)');
 
 foo(:,:,1) = imgGray(:,:);
 foo(:,:,2) = rgb2gray(seq{2})(:,:);
@@ -155,7 +147,7 @@ figure;
 imshow(it);
 
 if method==1
-    for k=4:8:40
+    for k=4:7:40
         clear v;
         k
         for x=1:k:h-k+1
@@ -179,7 +171,7 @@ if method==1
                 v((x+k-1)/k,(y+k-1)/k,:) = (m1*m2);
             end
         end
-        v(:,:,2) = -v(:,:,1);
+        v(:,:,2) = -v(:,:,2);
         [hh,ww,dd] = size(v);
         [x,y] = meshgrid(1:hh,1:ww);
         figure;
@@ -215,11 +207,11 @@ elseif method==2
                 v(x,y,:) = vxy;
             end
         end
-        v(:,:,2) = -v(:,:,1);
+        v(:,:,2) = -v(:,:,2);
         [hh,ww,dd] = size(v);
         [x,y] = meshgrid(1:hh,1:ww);
         figure;
-        imshow(seq{1});
+        %imshow(seq{1});
         %axis([1 h 1 w]);
         %axis manual
         hold on;
@@ -255,12 +247,13 @@ elseif method==3
             v(x,y,:) = vxy;
         end
     end
-    v(:,:,2) = -v(:,:,1);
-    [hh,ww,dd] = size(v);
+    v(:,:,2) = -v(:,:,2);
+    [hh,ww,dd] = size(v)
+    v
     [x,y] = meshgrid(1:hh,1:ww);
     figure;
     imshow(seq{1});
-    %axis([1 h 1 w]);
+    axis([1 h 1 w]);
     %axis manual
     hold on;
     quiver(x,y,v(:,:,1),v(:,:,2));
