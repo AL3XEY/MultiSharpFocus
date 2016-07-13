@@ -6,8 +6,8 @@ pkg load image;
 
 %graphics_toolkit('gnuplot');
 
-method = 1;
-test = 2;
+method = 5;
+test = 1;
 
 if test==1
     seq{1} = imread('img/fomd/fomd042.ppm');
@@ -16,14 +16,14 @@ if test==1
     %seq{4} = imread('img/fomd/fomd043.ppm');
     %seq{5} = imread('img/fomd/fomd044.ppm');
 elseif test==2
-    seq{1} = imread('img/lenat2.ppm');
-    seq{2} = imread('img/lenat3.ppm');
+    seq{1} = imread('img/lenat4.ppm');
+    seq{2} = imread('img/lenat1.ppm');
 elseif test==3
     seq{1} = imread('img/01.ppm');
     seq{2} = imread('img/02.ppm');
 elseif test==4
-    seq{1} = imread('img/sd/set2/img0.ppm');
-    seq{2} = imread('img/sd/set2/img1.ppm');
+    seq{1} = imread('img/sd/set2/img3.ppm');
+    seq{2} = imread('img/sd/set2/img0.ppm');
 elseif test==5
     seq{1} = imread('img/optical-flow/1.ppm');
     seq{2} = imread('img/optical-flow/2.ppm');
@@ -164,8 +164,8 @@ if method==1
 
                 m1 = [[a b]' [c d]'];
                 m2 = [e f]';
-                %m1 = [[sum(ix(:,:).^2) sum(ix(:,:).*iy(:,:))] [sum(iy(:,:).*ix(:,:)) sum(iy(:,:).^2)]]
-                %m2 = [[-sum(ix(:,:).*it(:,:))] [-sum(iy(:,:).*it(:,:))]]
+                %%m1 = [[sum(ix(:,:).^2) sum(ix(:,:).*iy(:,:))] [sum(iy(:,:).*ix(:,:)) sum(iy(:,:).^2)]]
+                %%m2 = [[-sum(ix(:,:).*it(:,:))] [-sum(iy(:,:).*it(:,:))]]
 
                 m1 = inv(m1);
                 v((x+k-1)/k,(y+k-1)/k,:) = (m1*m2);
@@ -261,6 +261,76 @@ elseif method==3
     set(gca,'YDir','reverse');  %# This flips the y axis
     %axis equal
     hold off;
+elseif method==4
+    for k=4:7:40
+        clear v;
+        k
+        for x=1:k:h-k+1
+            for y=1:k:w-k+1
+                %vx(i,j)=
+                %vy(i,j)=
+                a =sum(sum(ix(x:x+k-1,y:y+k-1).^2));
+                %ix.*iy
+                b = sum(sum(ix(x:x+k-1,y:y+k-1).*iy(x:x+k-1,y:y+k-1)));
+                c = sum(sum(iy(x:x+k-1,y:y+k-1).*ix(x:x+k-1,y:y+k-1)));
+                d = sum(sum(iy(x:x+k-1,y:y+k-1).^2));
+                e = -sum(sum(ix(x:x+k-1,y:y+k-1).*it(x:x+k-1,y:y+k-1)));
+                f = -sum(sum(iy(x:x+k-1,y:y+k-1).*it(x:x+k-1,y:y+k-1)));
+
+                uu = (d*e - b*f)/(a*d - b^2);
+                vv = (-(b*e) + a*f)/(a*d - b^2);
+
+                v((x+k-1)/k,(y+k-1)/k,:) = [uu vv]';
+            end
+        end
+        v(:,:,2) = -v(:,:,2);
+        [hh,ww,dd] = size(v);
+        [x,y] = meshgrid(1:hh,1:ww);
+        figure;
+        quiver(x,y,v(:,:,1),v(:,:,2));
+        set(gca,'YDir','reverse');  %# This flips the y axis
+        %axis equal
+    end
+elseif method==5
+    A = zeros(h*w,4);
+    L = zeros(h*w,1);
+    B = zeros(4,1);
+    v = zeros(h,w,2);
+
+    for x=1:h
+        for y=1:w
+            A(x*y,1) = ix(x,y);
+            A(x*y,2) = iy(x,y);
+            A(x*y,3) = y*ix(x,y) + x*iy(x,y);
+            A(x*y,4) = iy(x,y) - ix(x,y);
+            B(x*y) = it(x,y) + x*ix(x,y) + y*iy(x,y);
+        end
+    end
+
+    L = pinv(A)*B;
+
+    a = L(1);
+    b = L(2);
+    c = L(3);
+    d = L(4);
+    x=1:h;
+    y=1:w;
+
+    %v(x,y,1) = (c-1)*x -d*y +a;
+    %v(x,y,2) = d*x + (c-1)*y +b;
+    for x=1:h
+        for y=1:w
+            v(x,y,1) = (c-1)*x -d*y +a;
+            v(x,y,2) = d*x + (c-1)*y +b;
+        end
+    end
+
+    %v(:,:,2) = -v(:,:,2);
+    [x,y] = meshgrid(1:h,1:w);
+    figure;
+    quiver(x,y,v(:,:,1),v(:,:,2));
+    set(gca,'YDir','reverse');  %# This flips the y axis
+    %%axis equal
 end
 
 pause;
