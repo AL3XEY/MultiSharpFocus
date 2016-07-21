@@ -1,10 +1,11 @@
-function [sm] = sharp_detect( path, full=0 )
+function [sm] = sharp_detect( img, full=0 )
 %sharp_detect Detects and displays sharp zones in an image
 %   Detects sharp zones using a 3x3 Laplacian filter and an edge detector, then dilations and erosions
 
     pkg load image;
 
-    img = imread(path);
+    %img = imread(path);
+    
     %img = img(1:50,1:50);
 
     %convert image into grayscale format if it's not already
@@ -242,6 +243,7 @@ function [sm] = sharp_detect( path, full=0 )
     %fv = [[1/24 1/24 1/24 1/24 1/24] [1/24 1/24 1/24 1/24 1/24] [1/24 1/24 -1 1/24 1/24] [1/24 1/24 1/24 1/24 1/24] [1/24 1/24 1/24 1/24 1/24]]
     %v = conv2(v, fv);
 
+%if full==1
     for i=3:(h-2)%211%h-1
         for j=3:(w-2)%329%w-1
             a = imgGray((i-2):(i+2),(j-2):(j-1));
@@ -252,10 +254,10 @@ function [sm] = sharp_detect( path, full=0 )
             %v(i,j) = var(neighbours);
             v(i,j) = abs(mean(neighbours) - imgGray(i,j));
 
-            if full==1
+            %if full==1
                 vr(i,j) = vr(i,j) + v(i,j);
                 vr(i-2:i+2,j-2:j+2) = vr(i-2:i+2,j-2:j+2) + v(i,j);
-            end
+            %end
 
             %if full==1
                 vrr(i-1:i+1,j) = vrr(i-1:i+1,j) + 2*v(i,j);
@@ -272,6 +274,21 @@ function [sm] = sharp_detect( path, full=0 )
 
         end
     end
+%end
+
+if full==1
+    fv = ones(5);
+    fv(:,:) = fv(:,:)/24;
+    fv(3,3) = -1;
+    v = conv2(imgGray,fv, 'same'); %v = conv2(imgGray,fv, 'same');
+    v = abs(v);
+    %v = mat2gray(v);
+    %v = floor(255.*v);
+    fvr = ones(5);
+    fvr(3,3) = 2;
+    vr = conv2(v,fvr);
+    %vr = mat2gray(vr);
+    %vr = floor(255.*vr);
 
     %TODO replace loops by call to Octave's conv2()
 
@@ -279,13 +296,14 @@ function [sm] = sharp_detect( path, full=0 )
     %fvrr = [[-1 -1 0 -1 -1] [-1 0 1 0 -1] [0 1 4 1 0] [-1 0 1 0 -1] [-1 -1 0 -1 -1]]
     %vr = conv2(v, fvr);
     %vrr = conv2(v, fvrr);
+end
 
-    if full==1
+    %if full==1
         figure;
         colormap jet;
         imagesc(v);
         title('Variance of pixel values in original grayscale image');
-    end
+    %end
 
     %v = mat2gray(v);
     %figure;
@@ -305,20 +323,21 @@ function [sm] = sharp_detect( path, full=0 )
         end
     end
 
-    if full==1
+    %if full==1
         figure;
         imagesc(vr);
         title('Variance accentuation');
-
+    %end
+    if full==1
         figure;
         imagesc(vr2);
         title('Variance localized accentuation');
     end
-
+    %if full==1
         figure;
         imagesc(vrr);
         title('Variance strong accentuation');
-
+    %end
     if full==1
         figure;
         imagesc(vrr2);
@@ -328,5 +347,6 @@ function [sm] = sharp_detect( path, full=0 )
 
 
     sm = vr;
+    %sm = vrr;
 
 end;

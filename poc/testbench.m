@@ -2,12 +2,13 @@
 %
 
 clear all;
+close all;
 clc;
 
 pkg load image;
 
 %graphics_toolkit('fltk');
-graphics_toolkit('gnuplot');
+%graphics_toolkit('gnuplot');
 
 full = 0;
 
@@ -62,32 +63,34 @@ full = 0;
 %%img = imread('img/sd/set2/img2.ppm');
 %%imgs(:,:,3) = (img(:,:,1) + img(:,:,2) + img(:,:,3))/3;
 
-imgs(:,:,1) = imread('img/sd/set2/img0.pgm');
-imgs(:,:,2) = imread('img/sd/set2/img1.pgm');
-imgs(:,:,3) = imread('img/sd/set2/img2.pgm');
-imgsc(:,:,:,1) = imread('img/sd/set2/img0.ppm');
-imgsc(:,:,:,2) = imread('img/sd/set2/img1.ppm');
-imgsc(:,:,:,3) = imread('img/sd/set2/img2.ppm');
-vrs(:,:,1) = sharp_detect('img/sd/set2/img0.ppm', full);
-vrs(:,:,2) = sharp_detect('img/sd/set2/img1.ppm', full);
-vrs(:,:,3) = sharp_detect('img/sd/set2/img2.ppm', full);
+%imgs(:,:,1) = imread('img/sd/set2/img0.pgm');
+%imgs(:,:,2) = imread('img/sd/set2/img1.pgm');
+%imgs(:,:,3) = imread('img/sd/set2/img2.pgm');
+%imgsc(:,:,:,1) = imread('img/sd/set2/img0.ppm');
+%imgsc(:,:,:,2) = imread('img/sd/set2/img1.ppm');
+%imgsc(:,:,:,3) = imread('img/sd/set2/img2.ppm');
+%vrs(:,:,1) = sharp_detect('img/sd/set2/img0.ppm', full);
+%vrs(:,:,2) = sharp_detect('img/sd/set2/img1.ppm', full);
+%vrs(:,:,3) = sharp_detect('img/sd/set2/img2.ppm', full);
 
 %%%%%%%%%%
 
-%imgs(:,:,1) = imread('img/sd/set1/img0.pgm');
-%imgs(:,:,2) = imread('img/sd/set1/img1.pgm');
-%imgs(:,:,3) = imread('img/sd/set1/img2.pgm');
-%imgs(:,:,4) = imread('img/sd/set1/img3.pgm');
-%imgsc(:,:,:,1) = imread('img/sd/set1/img0.ppm');
-%imgsc(:,:,:,2) = imread('img/sd/set1/img1.ppm');
-%imgsc(:,:,:,3) = imread('img/sd/set1/img2.ppm');
-%imgsc(:,:,:,4) = imread('img/sd/set1/img3.ppm');
-%vrs(:,:,1) = sharp_detect('img/sd/set1/img0.ppm', full);
-%vrs(:,:,2) = sharp_detect('img/sd/set1/img1.ppm', full);
-%vrs(:,:,3) = sharp_detect('img/sd/set1/img2.ppm', full);
-%vrs(:,:,4) = sharp_detect('img/sd/set1/img3.ppm', full);
+imgsc(:,:,:,1) = imread('img/sd/set2/img0.ppm');
+imgsc(:,:,:,2) = imread('img/sd/set2/img1.ppm');
+imgsc(:,:,:,3) = imread('img/sd/set2/img2.ppm');
+imgsc(:,:,:,4) = imread('img/sd/set2/img3.ppm');
 
-[h,w,c] = size(vrs)
+imgs(:,:,1) = rgb2gray(imgsc(:,:,:,1));
+imgs(:,:,2) = rgb2gray(imgsc(:,:,:,2));
+imgs(:,:,3) = rgb2gray(imgsc(:,:,:,3));
+imgs(:,:,4) = rgb2gray(imgsc(:,:,:,4));
+
+vrs(:,:,1) = sharp_detect(imgsc(:,:,:,1), full);
+vrs(:,:,2) = sharp_detect(imgsc(:,:,:,2), full);
+vrs(:,:,3) = sharp_detect(imgsc(:,:,:,3), full);
+vrs(:,:,4) = sharp_detect(imgsc(:,:,:,4), full);
+
+[h,w,c] = size(imgs(:,:,1))
 
 for x=1:h
     for y=1:w
