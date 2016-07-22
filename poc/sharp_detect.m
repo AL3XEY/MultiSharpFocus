@@ -254,10 +254,10 @@ if full==1
             %v(i,j) = var(neighbours);
             v(i,j) = abs(mean(neighbours) - imgGray(i,j));
 
-            %if full==1
+            if full==1
                 vr(i,j) = vr(i,j) + v(i,j);
                 vr(i-2:i+2,j-2:j+2) = vr(i-2:i+2,j-2:j+2) + v(i,j);
-            %end
+            end
 
             if full==1
                 vrr(i-1:i+1,j) = vrr(i-1:i+1,j) + 2*v(i,j);
@@ -289,15 +289,20 @@ end
     fvr(3,3) = 2;
     %vr = imfilter(v,fvr, 'conv');
     vr = conv2(v,fvr, 'same');
+    for i=1:79 %TODO this is just a test for now
+        vr = conv2(vr,fvr, 'same');
+    end
+
     %vr = mat2gray(vr);
     %vr = floor(255.*vr);
 
     %TODO replace loops by call to Octave's conv2()
 
     %fvr = [[1 1 1] [1 2 1] [1 1 1]]
-    %fvrr = [[-1 -1 0 -1 -1] [-1 0 1 0 -1] [0 1 4 1 0] [-1 0 1 0 -1] [-1 -1 0 -1 -1]]
+    %fvrr = [[-1 -1 0 -1 -1]' [-1 0 1 0 -1]' [0 1 4 1 0]' [-1 0 1 0 -1]' [-1 -1 0 -1 -1]']
+    %fvrr = [[0 0 1 0 0]' [0 1 2 1 0]' [1 2 4 2 1]' [0 1 2 1 0]' [0 0 1 0 0]']
     %vr = conv2(v, fvr);
-    %vrr = conv2(v, fvrr);
+    %vrr = conv2(v, fvrr, 'same');
 %end
 
     if full==1
