@@ -5,11 +5,11 @@ function [sm] = sharp_detect( img, full=0 )
     pkg load image;
 
     %img = imread(path);
-    
+
     %img = img(1:50,1:50);
 
     %convert image into grayscale format if it's not already
-    [h,w,c]=size(img)
+    [h,w,c]=size(img);
     if c==3
     	imgGray = rgb2gray(img);
     	w=w/3;
@@ -67,7 +67,7 @@ function [sm] = sharp_detect( img, full=0 )
         %res = histeq(res);
     end
 
-    if full==0
+    if full==1
     	sx = zeros(h,w);
     	sy = zeros(h,w);
     	sxy = zeros(h,w);
@@ -104,10 +104,10 @@ function [sm] = sharp_detect( img, full=0 )
     	dxy = mat2gray(abs(dxy));
 
         %attempt to use local 2D Fourier Transform
-        tau = 2;
-        f = 1/1000000000;
-        x0 = 1;
-        y0 = 1;
+        %tau = 2;
+        %f = 1/1000000000;
+        %x0 = 1;
+        %y0 = 1;
         %for x=1:50%h-1
         	%for y=1:50%w-1
         		%stftx(x,y) = 0;
@@ -243,7 +243,7 @@ function [sm] = sharp_detect( img, full=0 )
     %fv = [[1/24 1/24 1/24 1/24 1/24] [1/24 1/24 1/24 1/24 1/24] [1/24 1/24 -1 1/24 1/24] [1/24 1/24 1/24 1/24 1/24] [1/24 1/24 1/24 1/24 1/24]]
     %v = conv2(v, fv);
 
-%if full==1
+if full==1
     for i=3:(h-2)%211%h-1
         for j=3:(w-2)%329%w-1
             a = imgGray((i-2):(i+2),(j-2):(j-1));
@@ -259,7 +259,7 @@ function [sm] = sharp_detect( img, full=0 )
                 vr(i-2:i+2,j-2:j+2) = vr(i-2:i+2,j-2:j+2) + v(i,j);
             %end
 
-            %if full==1
+            if full==1
                 vrr(i-1:i+1,j) = vrr(i-1:i+1,j) + 2*v(i,j);
                 vrr(i,j-1:j+1) = vrr(i,j-1:j+1) + 2*v(i,j);
                 vrr(i,j-2) = vrr(i,j-2) + v(i,j);
@@ -270,23 +270,25 @@ function [sm] = sharp_detect( img, full=0 )
                 vrr(i-1,j+1) = vrr(i-1,j+1) + v(i,j);
                 vrr(i+1,j-1) = vrr(i+1,j-1) + v(i,j);
                 vrr(i+1,j+1) = vrr(i+1,j+1) + v(i,j);
-            %end
+            end
 
         end
     end
-%end
+end
 
-if full==1
+%if full==1
     fv = ones(5);
     fv(:,:) = fv(:,:)/24;
     fv(3,3) = -1;
-    v = conv2(imgGray,fv, 'same'); %v = conv2(imgGray,fv, 'same');
+    %v = imfilter(imgGray,fv, 'conv');
+    v = conv2(imgGray,fv, 'same');
     v = abs(v);
     %v = mat2gray(v);
     %v = floor(255.*v);
     fvr = ones(5);
     fvr(3,3) = 2;
-    vr = conv2(v,fvr);
+    %vr = imfilter(v,fvr, 'conv');
+    vr = conv2(v,fvr, 'same');
     %vr = mat2gray(vr);
     %vr = floor(255.*vr);
 
@@ -296,14 +298,14 @@ if full==1
     %fvrr = [[-1 -1 0 -1 -1] [-1 0 1 0 -1] [0 1 4 1 0] [-1 0 1 0 -1] [-1 -1 0 -1 -1]]
     %vr = conv2(v, fvr);
     %vrr = conv2(v, fvrr);
-end
+%end
 
-    %if full==1
+    if full==1
         figure;
         colormap jet;
         imagesc(v);
         title('Variance of pixel values in original grayscale image');
-    %end
+    end
 
     %v = mat2gray(v);
     %figure;
@@ -333,18 +335,16 @@ end
         imagesc(vr2);
         title('Variance localized accentuation');
     end
-    %if full==1
+    if full==1
         figure;
         imagesc(vrr);
         title('Variance strong accentuation');
-    %end
+    end
     if full==1
         figure;
         imagesc(vrr2);
         title('Variance localized strong accentuation');
     end
-
-
 
     sm = vr;
     %sm = vrr;
