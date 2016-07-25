@@ -56,7 +56,8 @@ function [v] = optical_flow( img1, img2, method=6, debug=0 )
         imshow(it);
     end
 
-    if method==1
+    switch method
+    case 1
         for k=4:7:40
             clear v;
             k
@@ -89,7 +90,7 @@ function [v] = optical_flow( img1, img2, method=6, debug=0 )
             set(gca,'YDir','reverse');  %# This flips the y axis
             %axis equal
         end
-    elseif method==2
+    case 2
         for k=4:7:40
             clear v;
             k
@@ -131,7 +132,7 @@ function [v] = optical_flow( img1, img2, method=6, debug=0 )
             %axis equal
             hold off;
         end
-    elseif method==3
+    case 3
         k=1
         for x=1:k:h-k+1
             for y=1:k:w-k+1
@@ -171,7 +172,7 @@ function [v] = optical_flow( img1, img2, method=6, debug=0 )
         set(gca,'YDir','reverse');  %# This flips the y axis
         %axis equal
         hold off;
-    elseif method==4
+    case 4
         for k=4:7:40
             clear v;
             k
@@ -201,7 +202,7 @@ function [v] = optical_flow( img1, img2, method=6, debug=0 )
             set(gca,'YDir','reverse');  %# This flips the y axis
             %axis equal
         end
-    elseif method==5
+    case 5
         A = zeros(h*w,4);
         L = zeros(h*w,1);
         B = zeros(4,1);
@@ -247,7 +248,7 @@ function [v] = optical_flow( img1, img2, method=6, debug=0 )
         quiver(x,y,v(:,:,1),v(:,:,2));
         set(gca,'YDir','reverse');  %# This flips the y axis
         %%axis equal
-    elseif method==6
+    case 6
         A = zeros(h*w,4);
         L = zeros(h*w,1);
         B = zeros(4,1);
@@ -293,6 +294,8 @@ function [v] = optical_flow( img1, img2, method=6, debug=0 )
         quiver(x,y,v(:,:,1),v(:,:,2));
         set(gca,'YDir','reverse');  %# This flips the y axis
         %%axis equal
+    otherwise
+        'No method selected. Please select a method between 1 and 6.'
     end
 
     figure

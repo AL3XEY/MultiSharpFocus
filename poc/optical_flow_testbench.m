@@ -7,7 +7,7 @@ pkg load image;
 %graphics_toolkit('gnuplot');
 
 method = 6;
-test = 3;
+test = 9;
 
 if test==1
     seq{1} = imread('img/fomd/fomd042.ppm');
@@ -33,6 +33,12 @@ elseif test==6
 elseif test==7
     seq{1} = imread('img/frame10.png');
     seq{2} = imread('img/frame11.png');
+elseif test==8
+    seq{1} = imread('img/lena.ppm');
+    seq{2} = imread('img/lena.ppm');
+elseif test==9
+        seq{1} = imread('img/lena.ppm');
+        seq{2} = imread('img/lenat5.ppm');
 end
 
 
@@ -394,24 +400,24 @@ end
 figure
 imshow(flowToColor(v))
 
-for x=1:h
-    for y=1:w
-        v(x,y)
-        round(v(x,y))
-        x2 = x+round(v(x,y,1))
-        y2 = y+round(v(x,y,2))
-        if x2 < 1 || x2 >= h || y2 < 1 || y2 >= w %TODO find something better
-            x2 = x;
-            y2 = y;
-        end
-
-        res(x,y) = max([seq{1}(x2, y2) seq{2}(x, y)]);
-        %res(x,y) = imgs(x,y,p);
-        %resc(x,y,:) = imgsc(x,y,:,p);
-    end
-end
-
-figure;
-imshow(res);
+%for x=1:h
+%    for y=1:w
+%        v(x,y)
+%        round(v(x,y))
+%        x2 = x+round(v(x,y,1))
+%        y2 = y+round(v(x,y,2))
+%        if x2 < 1 || x2 >= h || y2 < 1 || y2 >= w %TODO find something better
+%            x2 = x;
+%            y2 = y;
+%        end
+%
+%        res(x,y) = max([seq{1}(x2, y2) seq{2}(x, y)]);
+%        %res(x,y) = imgs(x,y,p);
+%        %resc(x,y,:) = imgsc(x,y,:,p);
+%    end
+%end
+%
+%figure;
+%imshow(res);
 
 pause;

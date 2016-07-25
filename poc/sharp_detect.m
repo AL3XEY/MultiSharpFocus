@@ -289,14 +289,13 @@ end
     fvr(3,3) = 2;
     %vr = imfilter(v,fvr, 'conv');
     vr = conv2(v,fvr, 'same');
-    for i=1:79 %TODO this is just a test for now
+
+    for i=1:9 %TODO this is just a test for now
         vr = conv2(vr,fvr, 'same');
     end
 
     %vr = mat2gray(vr);
     %vr = floor(255.*vr);
-
-    %TODO replace loops by call to Octave's conv2()
 
     %fvr = [[1 1 1] [1 2 1] [1 1 1]]
     %fvrr = [[-1 -1 0 -1 -1]' [-1 0 1 0 -1]' [0 1 4 1 0]' [-1 0 1 0 -1]' [-1 -1 0 -1 -1]']
