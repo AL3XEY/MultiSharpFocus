@@ -2,13 +2,13 @@
 #include "mex.h"
 #include "math.h"
 #include "time.h"
-#include "Definitions.h" 
-#include "Castan.h" 
-#include "Deriche.h" 
+#include "Definitions.h"
+#include "Castan.h"
+#include "Deriche.h"
 
 #define MESSAGE_D_ERREUR "L'appel de la fonction se fait sous la forme : \n[ GradientX, GradientY, GradientXY ] = DeriveImage(ImageSource, alpha, type) \n type = 1 : shen-castan \n type = 2 : deriche"
 
-void mexFunction(int NbOut, struct mxArray_tag *PtOut[],int NbIn, const struct mxArray_tag *PtIn[])
+void mexFunction(int nlhs, mxArray *plhs[],int nrhs, const mxArray *prhs[])
 {
  double *Image, *Derive_x, *Derive_y, *Derive_xy, *pt, *ptd ;
  int TailleImage, Nlin, Ncol, lin, col ;
@@ -16,55 +16,55 @@ void mexFunction(int NbOut, struct mxArray_tag *PtOut[],int NbIn, const struct m
  unsigned char type_de_filtre ;
  int n ;
 
- switch(NbOut)
+ switch(nlhs)
  {
   case 3 : break ;
   default : mexErrMsgTxt(MESSAGE_D_ERREUR) ; return ; break ;
  }
- 
- switch(NbIn)
+
+ switch(nrhs)
  {
   case 3 : break ;
   default : mexErrMsgTxt(MESSAGE_D_ERREUR) ; return ; break ;
  }
-   
- Nlin = mxGetM(PtIn[0]) ;
- Ncol = mxGetN(PtIn[0]) ;
- 
- if( ( mxGetM(PtIn[1]) != 1 ) || ( mxGetN(PtIn[1]) != 1 ) )
+
+ Nlin = mxGetM(prhs[0]) ;
+ Ncol = mxGetN(prhs[0]) ;
+
+ if( ( mxGetM(prhs[1]) != 1 ) || ( mxGetN(prhs[1]) != 1 ) )
  {
   printf("un seul parametre pour les filtres\n") ;
   mexErrMsgTxt(MESSAGE_D_ERREUR) ; return ;
  }
 
- if( ( mxGetM(PtIn[2]) != 1 ) || ( mxGetN(PtIn[2]) != 1 ) )
+ if( ( mxGetM(prhs[2]) != 1 ) || ( mxGetN(prhs[2]) != 1 ) )
  {
   printf("type = 1 (shen) ou 2 (deriche) " ) ;
   mexErrMsgTxt(MESSAGE_D_ERREUR) ; return ;
  }
- 
- 
- pt = mxGetPr(PtIn[1]) ; alpha = (*pt) ;
- pt = mxGetPr(PtIn[2]) ; type_de_filtre = (unsigned char)(*pt) ;
-  
+
+
+ pt = mxGetPr(prhs[1]) ; alpha = (*pt) ;
+ pt = mxGetPr(prhs[2]) ; type_de_filtre = (unsigned char)(*pt) ;
+
  TailleImage = Nlin * Ncol ;
 
  // Allocation de l'image
- 
+
  Image = (double *)mxCalloc(TailleImage,sizeof(double)) ;
  if(Image==NULL)
  {
   printf("Probleme d'allocation pour %d bytes pour l'image source\n",TailleImage) ;
-  mexErrMsgTxt("Pas assez de mémoire pour traiter de ce problème\n") ;
+  mexErrMsgTxt("Pas assez de mÔøΩmoire pour traiter de ce problÔøΩme\n") ;
   return ;
  }
- 
+
  Derive_x = (double *)mxCalloc(TailleImage,sizeof(double)) ;
  if(Derive_x==NULL)
  {
   mxFree(Image) ;
   printf("Probleme d'allocation pour %d bytes pour l'image cible\n",TailleImage) ;
-  mexErrMsgTxt("Pas assez de mémoire pour traiter de ce problème\n") ;
+  mexErrMsgTxt("Pas assez de mÔøΩmoire pour traiter de ce problÔøΩme\n") ;
   return ;
  }
 
@@ -74,7 +74,7 @@ void mexFunction(int NbOut, struct mxArray_tag *PtOut[],int NbIn, const struct m
   mxFree(Image) ;
   mxFree(Derive_x) ;
   printf("Probleme d'allocation pour %d bytes pour l'image cible\n",TailleImage) ;
-  mexErrMsgTxt("Pas assez de mémoire pour traiter de ce problème\n") ;
+  mexErrMsgTxt("Pas assez de mÔøΩmoire pour traiter de ce problÔøΩme\n") ;
   return ;
  }
 
@@ -85,12 +85,12 @@ void mexFunction(int NbOut, struct mxArray_tag *PtOut[],int NbIn, const struct m
   mxFree(Derive_x) ;
   mxFree(Derive_y) ;
   printf("Probleme d'allocation pour %d bytes pour l'image cible\n",TailleImage) ;
-  mexErrMsgTxt("Pas assez de mémoire pour traiter de ce problème\n") ;
+  mexErrMsgTxt("Pas assez de mÔøΩmoire pour traiter de ce problÔøΩme\n") ;
   return ;
  }
 
- // On remet l'image dans l'ordre 
- pt = mxGetPr(PtIn[0]) ;
+ // On remet l'image dans l'ordre
+ pt = mxGetPr(prhs[0]) ;
  for( col=0 ; col<Ncol ; col++ )
  {
   for( lin=0 ; lin<Nlin ; lin++ )
@@ -100,19 +100,19 @@ void mexFunction(int NbOut, struct mxArray_tag *PtOut[],int NbIn, const struct m
    pt++ ;
   }
  }
- 
+
  switch(type_de_filtre)
  {
   case 1 :
   {
    castan(Image, Derive_xy, Derive_x, Derive_y, Nlin, Ncol, alpha) ;
   } break ;
-  
+
   case 2 :
   {
    deriche(Image, Derive_xy, Derive_x, Derive_y, Nlin, Ncol, alpha) ;
   } break ;
-  
+
   default :
   {
    pt = Image ; ptd = Derive_x ; for( n=0 ; n<TailleImage ; n++ ) (*ptd++) = (*pt++) ;
@@ -120,13 +120,13 @@ void mexFunction(int NbOut, struct mxArray_tag *PtOut[],int NbIn, const struct m
    pt = Image ; ptd = Derive_xy ; for( n=0 ; n<TailleImage ; n++ ) (*ptd++) = (*pt++) ;
   } break ;
  }
- 
- 
- PtOut[0] = mxCreateDoubleMatrix(Nlin,Ncol,mxREAL) ;
- PtOut[1] = mxCreateDoubleMatrix(Nlin,Ncol,mxREAL) ;
- PtOut[2] = mxCreateDoubleMatrix(Nlin,Ncol,mxREAL) ;
- 
- pt = mxGetPr(PtOut[0]) ;
+
+
+ plhs[0] = mxCreateDoubleMatrix(Nlin,Ncol,mxREAL) ;
+ plhs[1] = mxCreateDoubleMatrix(Nlin,Ncol,mxREAL) ;
+ plhs[2] = mxCreateDoubleMatrix(Nlin,Ncol,mxREAL) ;
+
+ pt = mxGetPr(plhs[0]) ;
 
  for( col=0 ; col<Ncol ; col++ )
  {
@@ -138,7 +138,7 @@ void mexFunction(int NbOut, struct mxArray_tag *PtOut[],int NbIn, const struct m
   }
  }
 
- pt = mxGetPr(PtOut[1]) ;
+ pt = mxGetPr(plhs[1]) ;
 
  for( col=0 ; col<Ncol ; col++ )
  {
@@ -149,7 +149,7 @@ void mexFunction(int NbOut, struct mxArray_tag *PtOut[],int NbIn, const struct m
    pt++ ;
   }
  }
- pt = mxGetPr(PtOut[2]) ;
+ pt = mxGetPr(plhs[2]) ;
 
  for( col=0 ; col<Ncol ; col++ )
  {
@@ -160,7 +160,7 @@ void mexFunction(int NbOut, struct mxArray_tag *PtOut[],int NbIn, const struct m
    pt++ ;
   }
  }
-  
+
  mxFree(Image) ;
  mxFree(Derive_x) ;
  mxFree(Derive_y) ;

@@ -1,10 +1,11 @@
  #include "math.h"
+ #include <stdio.h>
  #include "Definitions.h"
 
  int deriche(double * Image,
 	     double * Imagexy,
 	     double * Imagex,
-	     double * Imagey, 
+	     double * Imagey,
 	     int nlin,
 	     int ncol,
 	     double alpha) //typiquement 0.7
@@ -45,7 +46,7 @@
   b4 = bb*expa;
   b5 = b4 / ( 1.0 - b1 + b2 ) ;
   b6 = b1 - b2  +b +b3;
-  
+
   /* allocation memoire*/
 
   B1  = ALLOCATION(dim,double); //(double *) kmalloc(dim  * sizeof(double) ) ;
@@ -55,18 +56,18 @@
   {
    printf("Impossible d'allouer B1 ou B2 dans la procedure Deriche!!") ;   return(0) ;
   }
-  
+
 
 
 /**********************************/
 /* Calcul de la derivee suivant y */
 /**********************************/
 
-  // lissage en x 
+  // lissage en x
 
   for( debut=Image, lin=0 ; lin<nlin ; lin++, debut+=ncol )
   {
-    // Lissage Causal : B1 
+    // Lissage Causal : B1
 
    B_courant = B1 ;
    B_precedent = B1 ;
@@ -76,25 +77,25 @@
 
    (*B_suivant) =  b6*(*pixel_suivant) ;
    B_suivant++  ; pixel_suivant++;
-   (*B_suivant) =  b1 * (*B_courant) - 
+   (*B_suivant) =  b1 * (*B_courant) -
                    b2 * (*pixel_courant) +
 		   b  * (*pixel_suivant) +
 		   b3 * (*pixel_courant) ;
-   B_suivant++ ; pixel_suivant++ ; 
+   B_suivant++ ; pixel_suivant++ ;
    B_courant++ ; pixel_courant++;
    fin = B1 + ncol ;
 
    while(B_suivant<fin)
-   {	
-    (*B_suivant) = b1 * (*B_courant) - 
+   {
+    (*B_suivant) = b1 * (*B_courant) -
                    b2 * (*B_precedent)+
 		   b * (*pixel_suivant) +b3 * (*pixel_courant) ;
     B_suivant++ ; B_courant++ ; B_precedent++ ;
     pixel_suivant++ ; pixel_courant++ ;
    }
-    
-    // Lissage Anti-Causal : B2 
-   
+
+    // Lissage Anti-Causal : B2
+
    B_courant = B2 + ncol1 ;
    B_precedent = B2 + ncol1 ;
    B_suivant = B2 + ncol1 ;
@@ -103,26 +104,26 @@
 
    (*B_suivant) =  b6*(*pixel_courant) ;
    B_suivant-- ; pixel_suivant--;
-   (*B_suivant) =  b1 * (*B_courant) - 
+   (*B_suivant) =  b1 * (*B_courant) -
                    b2 * (*pixel_courant) +
-		   b * (*pixel_suivant) + 
+		   b * (*pixel_suivant) +
 		   b3*(*pixel_courant) ;
    B_suivant-- ; pixel_suivant--;
-   B_courant-- ; pixel_courant-- ; 
+   B_courant-- ; pixel_courant-- ;
    fin = B2 ;
 
    while(B_suivant>=fin)
-   {	
-    (*B_suivant) = b1 * (*B_courant) - 
+   {
+    (*B_suivant) = b1 * (*B_courant) -
                    b2 * (*B_precedent) +
-		   b * (*pixel_suivant) + 
+		   b * (*pixel_suivant) +
 		   b3*(*pixel_courant) ;
 
     B_suivant-- ; B_courant-- ; B_precedent-- ;
     pixel_suivant-- ; pixel_courant-- ;
    }
 
-   
+
    B_precedent = B1 ; B_suivant = B2 ;
    dy = Imagey + ( lin * ncol ) ; fin = dy + ncol ;
    pixel_suivant = Image + (lin * ncol);
@@ -133,7 +134,7 @@
    }
 
 
-  } // fin du lissage 
+  } // fin du lissage
 
 
 /****************************************************************************/
@@ -143,7 +144,7 @@
 
   for( debut=Imagey, col=0 ; col<ncol ; col++, debut++ )
   {
-    //derivateur Causal : B1 
+    //derivateur Causal : B1
 
    B_courant = B1 ;
    B_precedent = B1 ;
@@ -152,24 +153,24 @@
 
    (*B_suivant) =  b5 * (*pixel_courant) ;
    B_suivant++ ;
-   (*B_suivant) =  b1 * (*B_courant) - 
+   (*B_suivant) =  b1 * (*B_courant) -
                    b2 * (*B_courant) +
 				   b4 * (*pixel_courant);
- 
-   B_suivant++ ; B_courant++ ; pixel_courant+=ncol ; 
+
+   B_suivant++ ; B_courant++ ; pixel_courant+=ncol ;
    fin = B1 + nlin ;
 
    while(B_suivant<fin)
-   {	
-    (*B_suivant) = b1 * (*B_courant) - 
+   {
+    (*B_suivant) = b1 * (*B_courant) -
                    b2 * (*B_precedent)+
 				   b4 * (*pixel_courant) ;
     B_suivant++ ; B_courant++ ; B_precedent++ ;
     pixel_courant+=ncol ;
    }
 
-    // Lissage Anti-Causal : B2 
-   
+    // Lissage Anti-Causal : B2
+
    B_courant = B2 + nlin1 ;
    B_precedent = B2 + nlin1 ;
    B_suivant = B2 + nlin1 ;
@@ -177,15 +178,15 @@
 
    (*B_suivant) =  b5*(*pixel_courant) ;
    B_suivant-- ;
-   (*B_suivant) =  b1 * (*B_courant) - 
+   (*B_suivant) =  b1 * (*B_courant) -
                    b2 * (*B_courant) +
 				   b4 * (*pixel_courant);
    B_suivant-- ;
-   B_courant-- ; pixel_courant-=ncol ; 
+   B_courant-- ; pixel_courant-=ncol ;
    fin = B2 ;
 
    while(B_suivant>=fin)
-   {	
+   {
     (*B_suivant) = b1 * (*B_courant) -
                    b2 * (*B_precedent) +
 				   b4 * (*pixel_courant) ;
@@ -201,20 +202,20 @@
     (*dy) = (*B_precedent) - (*B_suivant)  ;
     dy+=ncol ; B_precedent++ ; B_suivant++ ;
    }
-  } // fin du derivateur 
+  } // fin du derivateur
 
 
 /**********************************/
 /* Calcul de la derivee suivant x */
 /**********************************/
 
- 
+
   /* lissage en y */
 
 
   for( debut=Image, col=0 ; col<ncol ; col++, debut++ )
   {
-    // lissage Causal : B1 
+    // lissage Causal : B1
 
    B_courant = B1 ;
    B_precedent = B1 ;
@@ -224,17 +225,17 @@
 
    (*B_suivant) =  b6 *(*pixel_suivant) ;
    B_suivant++  ; pixel_suivant+=ncol;
-   (*B_suivant) =  b1 * (*B_courant) - 
+   (*B_suivant) =  b1 * (*B_courant) -
                    b2 * (*pixel_courant) +
 		   b  * (*pixel_suivant) +
 		   b3 * (*pixel_courant) ;
-   B_suivant++ ; pixel_suivant+=ncol ; 
+   B_suivant++ ; pixel_suivant+=ncol ;
    B_courant++ ; pixel_courant+=ncol;
    fin = B1 + nlin ;
 
    while(B_suivant<fin)
-   {	
-    (*B_suivant) = b1 * (*B_courant) - 
+   {
+    (*B_suivant) = b1 * (*B_courant) -
                    b2 * (*B_precedent)+
 		   b * (*pixel_suivant) +b3 * (*pixel_courant) ;
 
@@ -244,8 +245,8 @@
 
 
 
-    // Lissage Anti-Causal : B2 
-   
+    // Lissage Anti-Causal : B2
+
    B_courant = B2 + nlin1 ;
    B_precedent = B2 + nlin1 ;
    B_suivant = B2 + nlin1 ;
@@ -254,26 +255,26 @@
 
    (*B_suivant) =  b6 *(*pixel_courant) ;
    B_suivant-- ; pixel_suivant-=ncol;
-   (*B_suivant) =  b1 * (*B_courant) - 
+   (*B_suivant) =  b1 * (*B_courant) -
                    b2 * (*pixel_courant) +
-		   b * (*pixel_suivant) + 
+		   b * (*pixel_suivant) +
 		   b3*(*pixel_courant) ;
    B_suivant-- ; pixel_suivant-=ncol;
-   B_courant-- ; pixel_courant-=ncol ; 
+   B_courant-- ; pixel_courant-=ncol ;
    fin = B2 ;
 
    while(B_suivant>=fin)
-   {	
-    (*B_suivant) = b1 * (*B_courant) - 
+   {
+    (*B_suivant) = b1 * (*B_courant) -
                    b2 * (*B_precedent) +
-		   b * (*pixel_suivant) + 
+		   b * (*pixel_suivant) +
 		   b3*(*pixel_courant) ;
 
     B_suivant-- ; B_courant-- ; B_precedent-- ;
     pixel_suivant-=ncol ; pixel_courant-=ncol ;
    }
 
-  
+
    B_precedent = B1 ; B_suivant = B2 ;
    dx = Imagex + col ; fin = dx + nlin *ncol;
    pixel_suivant = Image + col;
@@ -283,16 +284,16 @@
     dx+=ncol ; B_precedent++ ; B_suivant++ ;pixel_suivant+=ncol;
    }
 
-  } // fin du lissage 
+  } // fin du lissage
 
 
-  // derivee en x 
+  // derivee en x
 
 
   for( debut=Imagex, lin=0 ; lin<nlin ; lin++, debut+=ncol )
   {
-    // derivee Causal : B1 
-   
+    // derivee Causal : B1
+
 
    B_courant = B1 ;
    B_precedent = B1 ;
@@ -301,25 +302,25 @@
 
    (*B_suivant) =  b5 * (*pixel_courant) ;
    B_suivant++ ;
-   (*B_suivant) =  b1 * (*B_courant) - 
+   (*B_suivant) =  b1 * (*B_courant) -
                    b2 * (*B_courant) +
 				   b4 * (*pixel_courant);
- 
-   B_suivant++ ; B_courant++ ; pixel_courant++; 
+
+   B_suivant++ ; B_courant++ ; pixel_courant++;
    fin = B1 + ncol ;
 
    while(B_suivant<fin)
-   {	
-    (*B_suivant) = b1 * (*B_courant) - 
+   {
+    (*B_suivant) = b1 * (*B_courant) -
                    b2 * (*B_precedent)+
 		   b4 * (*pixel_courant) ;
     B_suivant++ ; B_courant++ ; B_precedent++ ;
     pixel_courant++ ;
    }
 
-  
 
-   // derivee Anti-Causal : B2 
+
+   // derivee Anti-Causal : B2
    B_courant = B2 + ncol1 ;
    B_precedent = B2 + ncol1 ;
    B_suivant = B2 + ncol1 ;
@@ -327,15 +328,15 @@
 
    (*B_suivant) =  b5*(*pixel_courant) ;
    B_suivant-- ;
-   (*B_suivant) =  b1 * (*B_courant) - 
+   (*B_suivant) =  b1 * (*B_courant) -
                    b2 * (*B_courant) +
 		   b4 * (*pixel_courant);
    B_suivant-- ;
-   B_courant-- ; pixel_courant-- ; 
+   B_courant-- ; pixel_courant-- ;
    fin = B2 ;
 
    while(B_suivant>=fin)
-   {	
+   {
     (*B_suivant) = b1 * (*B_courant) -
                    b2 * (*B_precedent) +
 		   b4 * (*pixel_courant) ;
@@ -344,8 +345,8 @@
     pixel_courant-- ;
    }
 
-  
- 
+
+
    B_precedent = B1 ; B_suivant = B2 ;
    dx = Imagex + ( ncol * lin ) ; fin = dx + ncol;
 
@@ -356,9 +357,9 @@
    }
 
 
-  } // fin du derivateur 
+  } // fin du derivateur
 
- 
+
 
  /***********************************************/
  /*      Calcul du gradient                     */
@@ -379,17 +380,3 @@
  return 1;
  //kfree(B1) ; kfree(B2) ;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
