@@ -4,6 +4,12 @@ function [v] = optical_flow( img1, img2, method=6, debug=0 )
 
     %graphics_toolkit('gnuplot');
 
+    if ischar(img1) %TODO more verif
+        img1 = imread(img1);
+        img2 = imread(img2);
+    end
+
+    %TODO verification on weather the image is RGB or Grayscale?
     seq{1} = img1;
     seq{2} = img2;
     %TODO if non the same size (including pixel size), error
@@ -24,22 +30,51 @@ function [v] = optical_flow( img1, img2, method=6, debug=0 )
     %it=ones(n);
     imgGray = rgb2gray(seq{1});
 
-    if debug == 1
-        ix(1:h-1,1:w) = diff(imgGray(:,:));
-        figure;
-        imshow(ix);
-    end
-    ix=ones(h,w);
-    ix(1:h-1,1:w) = diff(imgGray(:,:));
+    %if debug == 1
+    %    ix(1:h-1,1:w) = diff(imgGray(:,:));
+    %    figure;
+    %    imshow(ix);
+    %end
+    %ix=ones(h,w);
+    %ix(1:h-1,1:w) = diff(imgGray(:,:));
+    %ix2 = mat2gray(ix);
 
-    if debug == 1
-        iy(1:w-1,1:h) = diff(imgGray(:,:)');
-        iy = iy';
-        figure;
-        imshow(iy);
-    end
-    iy=ones(h,w);
-    iy(1:w-1,1:h) = diff(imgGray(:,:)');
+    %figure;
+    %imshow(ix2);
+
+    %sobelx = zeros(3);
+    %sobelx =  [[-1 -2 -1]' [0 0 0]' [1 2 1]']';
+    %ix = conv2(imgGray, sobelx, 'same');
+
+    %ix2 = mat2gray(ix);
+    %figure;
+    %imshow(ix2);
+    %pause;
+    %pause;
+
+    %if debug == 1
+    %    iy(1:w-1,1:h) = diff(imgGray(:,:)');
+    %    iy = iy';
+    %    figure;
+    %    imshow(iy);
+    %end
+    %iy=ones(w,h);
+    %iy(1:w-1,1:h) = diff(imgGray(:,:)');
+    %iy = iy';
+
+    [ix iy] = imgradientxy(imgGray, 'sobel');
+
+    %ix = mat2gray(ix);
+    %iy = mat2gray(iy);
+
+    %figure;
+    %imshow(ix);
+    %figure;
+    %imshow(mat2gray(ix));
+    %figure;
+    %imshow(iy);
+    %figure;
+    %imshow(mat2gray(iy));
 
     foo(:,:,1) = imgGray(:,:);
     foo(:,:,2) = rgb2gray(seq{2})(:,:);
@@ -290,6 +325,7 @@ function [v] = optical_flow( img1, img2, method=6, debug=0 )
 
         %v(:,:,2) = -v(:,:,2);
         [x,y] = meshgrid(1:h,1:w);
+        %v=-v;
         figure;
         quiver(x,y,v(:,:,1),v(:,:,2));
         set(gca,'YDir','reverse');  %# This flips the y axis
@@ -298,7 +334,7 @@ function [v] = optical_flow( img1, img2, method=6, debug=0 )
         'No method selected. Please select a method between 1 and 6.'
     end
 
-    figure
-    imshow(flowToColor(v))
+    figure;
+    imshow(flowToColor(v));
 
 end

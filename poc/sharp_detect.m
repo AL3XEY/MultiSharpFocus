@@ -4,27 +4,30 @@ function [sm] = sharp_detect( img, full=0 )
 
     pkg load image;
 
-    %img = imread(path);
-
-    %img = img(1:50,1:50);
+    if ischar(img)
+        img = imread(img);
+    end
 
     %convert image into grayscale format if it's not already
     [h,w,c]=size(img);
-    if c==3
+    switch c
+    case 3
     	imgGray = rgb2gray(img);
     	w=w/3;
-    else
+    case 1
     	imgGray = img;
+    otherwise
+        'Error : input must be RGB or Grayscale'
     end
 
-    if full==1
+    %if full==1
     	% perform Fourier transform
-    	IMG = fft2(img);
-    	IMG = fftshift(IMG);
-    	IMG = abs(IMG);
-    	IMG = log(IMG+1);
-    	IMG = mat2gray(IMG);
-    end
+    	%IMG = fft2(img);
+    	%IMG = fftshift(IMG);
+    	%IMG = abs(IMG);
+    	%IMG = log(IMG+1);
+    	%IMG = mat2gray(IMG);
+    %end
 
     if full==1
         %create and apply Laplacian filter
@@ -67,41 +70,41 @@ function [sm] = sharp_detect( img, full=0 )
         %res = histeq(res);
     end
 
-    if full==1
-    	sx = zeros(h,w);
-    	sy = zeros(h,w);
-    	sxy = zeros(h,w);
-    	dx = zeros(h,w);
-    	dy = zeros(h,w);
-    	dxy = zeros(h,w);
+    %if full==1
+    %	sx = zeros(h,w);
+    %	sy = zeros(h,w);
+    %	sxy = zeros(h,w);
+    %	dx = zeros(h,w);
+    %	dy = zeros(h,w);
+    %	dxy = zeros(h,w);
+    %
+    %	for i=1:h-1%211%h
+    %		for j=1:w-1%329%w-1
+    %			sx(i,j)=(imgGray(i,j)+imgGray(i+1,j))/2;
+    %			dx(i,j)=imgGray(i+1,j)-imgGray(i,j);
+    %		end
+    %	end
+    %
+    %	for i=1:h-1%211%h-1
+    %		for j=1:w-1%329%w
+    %			sy(i,j)=(imgGray(i,j)+imgGray(i,j+1))/2;
+    %			dy(i,j)=imgGray(i,j+1)-imgGray(i,j);
+    %		end
+    %	end
 
-    	for i=1:h-1%211%h
-    		for j=1:w-1%329%w-1
-    			sx(i,j)=(imgGray(i,j)+imgGray(i+1,j))/2;
-    			dx(i,j)=imgGray(i+1,j)-imgGray(i,j);
-    		end
-    	end
+    %	for i=1:h-1%211%h-1
+    %		for j=1:w-1%329%w-1
+    %			sxy(i,j)=(imgGray(i,j)+imgGray(i+1,j+1))/2;
+    %			dxy(i,j)=imgGray(i+1,j+1)-imgGray(i,j);
+    %		end
+    %	end
 
-    	for i=1:h-1%211%h-1
-    		for j=1:w-1%329%w
-    			sy(i,j)=(imgGray(i,j)+imgGray(i,j+1))/2;
-    			dy(i,j)=imgGray(i,j+1)-imgGray(i,j);
-    		end
-    	end
-
-    	for i=1:h-1%211%h-1
-    		for j=1:w-1%329%w-1
-    			sxy(i,j)=(imgGray(i,j)+imgGray(i+1,j+1))/2;
-    			dxy(i,j)=imgGray(i+1,j+1)-imgGray(i,j);
-    		end
-    	end
-
-    	sx = mat2gray(sx);
-    	sy = mat2gray(sy);
-    	sxy = mat2gray(sxy);
-    	dx = mat2gray(abs(dx));
-    	dy = mat2gray(abs(dy));
-    	dxy = mat2gray(abs(dxy));
+    %	sx = mat2gray(sx);
+    %	sy = mat2gray(sy);
+    %	sxy = mat2gray(sxy);
+    %	dx = mat2gray(abs(dx));
+    %	dy = mat2gray(abs(dy));
+    %	dxy = mat2gray(abs(dxy));
 
         %attempt to use local 2D Fourier Transform
         %tau = 2;
@@ -126,14 +129,14 @@ function [sm] = sharp_detect( img, full=0 )
 
         %stft = integral imgGray.*hann(tau).*exp(-li)
 
-    end
+    %end
 
     %figure;
     %imshow(img);
 
-    figure;
-    imshow(imgGray);
-    title('Grayscale');
+    %figure;
+    %imshow(imgGray);
+    %title('Grayscale');
 
     if full==1
         figure;
@@ -141,53 +144,53 @@ function [sm] = sharp_detect( img, full=0 )
         title('Convolution with Laplacian');
     end
 
-    if full==1
-    	figure;
-    	imshow(IMG);
-        title('2DFFT');
+    %if full==1
+    %	figure;
+    %	imshow(IMG);
+    %    title('2DFFT');
 
-    	figure;
-    	%colormap jet;
-    	imagesc(sx);
+    %	figure;
+    %	%colormap jet;
+    %	imagesc(sx);
 
-    	figure;
-    	imagesc(sy);
+    %	figure;
+    %	imagesc(sy);
 
-    	figure;
-    	imagesc(sxy);
+    %	figure;
+    %	imagesc(sxy);
 
-    	figure;
-    	imagesc(dx);
+    %	figure;
+    %	imagesc(dx);
 
-    	figure;
-    	imagesc(dy);
+    %	figure;
+    %	imagesc(dy);
 
-    	figure;
-    	imagesc(dxy);
+    %	figure;
+    %	imagesc(dxy);
 
-    	figure;
-    	imhist(imgGray);
-        title('Histogram of grayscales');
+    	%figure;
+    	%imhist(imgGray);
+        %title('Histogram of grayscales');
 
     	%figure;
     	%[counts,locations]=imhist(imgGray);
     	%stem(locations,counts);
 
-    	figure;
-    	imhist(res);
-        title('Histogram of the image convoluted by a Laplacian filter');
+    	%figure;
+    	%imhist(res);
+        %title('Histogram of the image convoluted by a Laplacian filter');
 
-    end
+    %end
 
-    if full==1
-        [counts,locations]=imhist(imgGray);
-        locations
-        counts
-        var(counts)
-
-        var(var(imgGray))
-        var(var(res))
-    end
+    %if full==1
+    %    [counts,locations]=imhist(imgGray);
+    %    locations
+    %    counts
+    %    var(counts)
+    %
+    %    var(var(imgGray))
+    %    var(var(res))
+    %end
 
     if full==1
         edges = edge(res); %Sobel
@@ -254,12 +257,12 @@ if full==1
             %v(i,j) = var(neighbours);
             v(i,j) = abs(mean(neighbours) - imgGray(i,j));
 
-            if full==1
-                vr(i,j) = vr(i,j) + v(i,j);
-                vr(i-2:i+2,j-2:j+2) = vr(i-2:i+2,j-2:j+2) + v(i,j);
-            end
+            %if full==1
+            %    vr(i,j) = vr(i,j) + v(i,j);
+            %    vr(i-2:i+2,j-2:j+2) = vr(i-2:i+2,j-2:j+2) + v(i,j);
+            %end
 
-            if full==1
+            %if full==1
                 vrr(i-1:i+1,j) = vrr(i-1:i+1,j) + 2*v(i,j);
                 vrr(i,j-1:j+1) = vrr(i,j-1:j+1) + 2*v(i,j);
                 vrr(i,j-2) = vrr(i,j-2) + v(i,j);
@@ -270,7 +273,7 @@ if full==1
                 vrr(i-1,j+1) = vrr(i-1,j+1) + v(i,j);
                 vrr(i+1,j-1) = vrr(i+1,j-1) + v(i,j);
                 vrr(i+1,j+1) = vrr(i+1,j+1) + v(i,j);
-            end
+            %end
 
         end
     end
@@ -332,7 +335,9 @@ end
     %if full==1
         figure;
         imagesc(vr);
-        title('Variance accentuation');
+        %vrnorm = mat2gray(vr);
+        %imshowpair(img, vrnorm, 'montage');
+        %title('Variance accentuation');
     %end
     if full==1
         figure;
@@ -351,6 +356,8 @@ end
     end
 
     sm = vr;
+    %sm = vr2;
     %sm = vrr;
+    %sm = vrr2;
 
 end;
